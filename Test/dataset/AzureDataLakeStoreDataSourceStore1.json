@@ -1,0 +1,43 @@
+{
+	"name": "AzureDataLakeStoreDataSourceStore1",
+	"properties": {
+		"description": "Connection to your data source store.  ",
+		"linkedServiceName": {
+			"referenceName": "ADLS_DXC_CONN",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FolderPath": {
+				"type": "String"
+			},
+			"LastModified_From": {
+				"type": "String"
+			},
+			"LastModified_To": {
+				"type": "String"
+			}
+		},
+		"type": "AzureDataLakeStoreFile",
+		"typeProperties": {
+			"fileName": "*",
+			"folderPath": {
+				"value": "@dataset().FolderPath",
+				"type": "Expression"
+			},
+			"modifiedDatetimeStart": {
+				"value": "@dataset().LastModified_From",
+				"type": "Expression"
+			},
+			"modifiedDatetimeEnd": {
+				"value": "@dataset().LastModified_To",
+				"type": "Expression"
+			},
+			"key": "*",
+			"bucketName": {
+				"value": "@dataset().FolderPath",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

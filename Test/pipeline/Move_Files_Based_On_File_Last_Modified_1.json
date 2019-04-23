@@ -1,0 +1,229 @@
+{
+	"name": "Move_Files_Based_On_File_Last_Modified_1",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetSourceInfo",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "SqlSource",
+						"sqlReaderQuery": "select SID, LandinPath, FileName, ISActive, LoadType, sourcename, OutputPath, Empty from sourceinfo"
+					},
+					"dataset": {
+						"referenceName": "ASQL_EMP_DB_DS",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachSource",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "CopyDummyFile",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetSourceInfo').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "GetAllFilesForSource",
+							"type": "GetMetadata",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ADLS_DXC_NO_HEADER_DS",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_Path": {
+											"value": "@item().LandinPath",
+											"type": "Expression"
+										},
+										"File_Name": {
+											"value": "@item().Empty",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								]
+							}
+						},
+						{
+							"name": "CallPL2",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "GetAllFilesForSource",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Move_Files_Based_On_File_Last_Modified_2",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": false,
+								"parameters": {
+									"LandinPath": {
+										"value": "@item().LandinPath",
+										"type": "Expression"
+									},
+									"FileName": {
+										"value": "@item().FileName",
+										"type": "Expression"
+									},
+									"SourceName": {
+										"value": "@item().SourceName",
+										"type": "Expression"
+									},
+									"Empty": {
+										"value": "@item().Empty",
+										"type": "Expression"
+									},
+									"Org_FileName": {
+										"value": "@activity('GetAllFilesForSource').output.childItems",
+										"type": "Expression"
+									},
+									"OutputPath": {
+										"value": "@item().OutputPath",
+										"type": "Expression"
+									},
+									"LastLoadDateTime": {
+										"value": "@activity('GetLastRunDateTime').output.lastModified",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "GetLastRunDateTime",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "GetSourceInfo",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ADLS_DXC_NO_HEADER_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": {
+								"value": "Dummy",
+								"type": "Expression"
+							},
+							"File_Name": {
+								"value": "dummy_file",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"lastModified"
+					]
+				}
+			},
+			{
+				"name": "CopyDummyFile",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "GetLastRunDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureDataLakeStoreSource",
+						"recursive": true
+					},
+					"sink": {
+						"type": "AzureDataLakeStoreSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ADLS_DXC_NO_HEADER_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": {
+								"value": "Dummy",
+								"type": "Expression"
+							},
+							"File_Name": {
+								"value": "dummy_file",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ADLS_DXC_NO_HEADER_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": {
+								"value": "Dummy",
+								"type": "Expression"
+							},
+							"File_Name": {
+								"value": "dummy_file",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

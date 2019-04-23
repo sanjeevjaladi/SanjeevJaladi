@@ -1,0 +1,75 @@
+{
+	"name": "pipeline3",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.FileName",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"typeProperties": {
+								"expression": {
+									"value": "@or(contains(item().name, 'ACK_First'), contains(item().name, 'ACK_Second'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Append Variable1",
+										"type": "AppendVariable",
+										"typeProperties": {
+											"variableName": "FileName",
+											"value": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Set Variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"variableName": "FilesCount",
+					"value": {
+						"value": "@string(length(variables('FileName')))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"FileName": {
+				"type": "array"
+			}
+		},
+		"variables": {
+			"FileName": {
+				"type": "Array"
+			},
+			"FilesCount": {
+				"type": "String"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

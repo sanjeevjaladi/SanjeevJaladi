@@ -1,0 +1,31 @@
+{
+	"name": "ADLS_DXC_NO_HEADER_ALL_FILES_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ADLS_DXC_CONN",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Path": {
+				"type": "String"
+			}
+		},
+		"type": "AzureDataLakeStoreFile",
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "",
+				"nullValue": "\\N",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": false
+			},
+			"folderPath": {
+				"value": "@dataset().Path",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,46 @@
+{
+	"name": "FILES_UPDATED_BETWEEN_FROM_TO",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ADLS_DXC_CONN",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"File_Path": {
+				"type": "String"
+			},
+			"From_Time": {
+				"type": "string"
+			},
+			"To_Time": {
+				"type": "string"
+			}
+		},
+		"type": "AzureDataLakeStoreFile",
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "",
+				"nullValue": "\\N",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": false
+			},
+			"fileName": "*",
+			"folderPath": {
+				"value": "@dataset().File_Path",
+				"type": "Expression"
+			},
+			"modifiedDatetimeStart": {
+				"value": "@dataset().From_Time",
+				"type": "Expression"
+			},
+			"modifiedDatetimeEnd": {
+				"value": "@dataset().To_Time",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

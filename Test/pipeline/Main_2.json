@@ -1,0 +1,117 @@
+{
+	"name": "Main_2",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ADLS_DXC_NO_HEADER_ALL_FILES_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "Source/File_Wathch",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childItems",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"typeProperties": {
+								"expression": {
+									"value": "@or(contains(item().name, 'ACK_First'), contains(item().name, 'ACK_Second'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Append Variable1",
+										"type": "AppendVariable",
+										"typeProperties": {
+											"variableName": "V_File_Names",
+											"value": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Main_1",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"Count": {
+							"value": "@string(length(variables('V_File_Names')))",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ABC": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"V_File_Names": {
+				"type": "Array"
+			},
+			"V_Files_Count": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "FILE WATCH"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

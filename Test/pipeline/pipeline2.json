@@ -1,0 +1,76 @@
+{
+	"name": "pipeline2",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until1",
+				"type": "Until",
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(1,1)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "GetMetadata1",
+							"type": "GetMetadata",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "ADLS_DXC_NO_HEADER_ALL_FILES_DS",
+									"type": "DatasetReference",
+									"parameters": {
+										"Path": {
+											"value": "Source/File_Wathch",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								]
+							}
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "GetMetadata1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline3",
+									"type": "PipelineReference"
+								},
+								"parameters": {
+									"FileName": {
+										"value": "@activity('GetMetadata1').output.childItems",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					],
+					"timeout": "0.00:02:00"
+				}
+			}
+		],
+		"variables": {
+			"Test": {
+				"type": "String"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,73 @@
+{
+	"name": "Multi_File_Check_Second",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until1",
+				"type": "Until",
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(pipeline().parameters.ABC, '2')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Wait_Inside",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Execute Pipeline1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Multi_File_Check_First_New",
+									"type": "PipelineReference"
+								},
+								"parameters": {
+									"ABC": {
+										"value": "@pipeline().parameters.ABC",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					],
+					"timeout": "00.00:02:00"
+				}
+			},
+			{
+				"name": "Wait_Outside",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"parameters": {
+			"ABC": {
+				"type": "string",
+				"defaultValue": "1"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

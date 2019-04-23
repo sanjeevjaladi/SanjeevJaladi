@@ -1,0 +1,14 @@
+{
+	"name": "ASQL_EMP_DB_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ASQL_EMP_CONN",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"typeProperties": {
+			"tableName": "[dbo].[sourceinfo]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

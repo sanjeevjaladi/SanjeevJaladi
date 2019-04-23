@@ -1,0 +1,84 @@
+{
+	"name": "BLOBTOADLS",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ADLS_DXC_NO_HEADERS_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": "empdb1134",
+							"File_Name": "Emp_1.csv"
+						}
+					},
+					"fieldList": [
+						"exists"
+					]
+				}
+			},
+			{
+				"name": "Copy Data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "BlobSource",
+						"recursive": true
+					},
+					"sink": {
+						"type": "AzureDataLakeStoreSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ABLOB_DXC_WITH_HEADER_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": "empdb1134",
+							"File_Name": {
+								"value": "Emp_1.csv",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ADLS_DXC_NO_HEADER_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": "ABC",
+							"File_Name": "Emp_1.csv"
+						}
+					}
+				]
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
