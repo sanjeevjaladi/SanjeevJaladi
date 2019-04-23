@@ -1,0 +1,75 @@
+{
+	"name": "pipeline5",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until1",
+				"type": "Until",
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('V_FilesCount'), '2')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "IfCondition1",
+							"type": "IfCondition",
+							"typeProperties": {
+								"expression": {
+									"value": "@or(contains(pipeline().parameters.FileName, 'ACK_First') , contains(pipeline().parameters.FileName, 'ACK_Second') )",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "AppendVariable1",
+										"type": "AppendVariable",
+										"typeProperties": {
+											"variableName": "V_FileName",
+											"value": {
+												"value": "@pipeline().parameters.FileName",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Set Variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "IfCondition1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"variableName": "V_FilesCount",
+								"value": {
+									"value": "@string(length(variables('V_FileName')))",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"V_FileName": {
+				"type": "Array"
+			},
+			"V_FilesCount": {
+				"type": "String"
+			}
+		}
+	}
+}
