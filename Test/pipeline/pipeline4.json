@@ -18,6 +18,7 @@
 						"value": "@activity('Get Metadata1').output.childItems",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Execute Pipeline1",
@@ -27,6 +28,7 @@
 									"referenceName": "pipeline5",
 									"type": "PipelineReference"
 								},
+								"waitOnCompletion": false,
 								"parameters": {
 									"FileName": {
 										"value": "@item().name",
@@ -58,7 +60,10 @@
 								"type": "Expression"
 							}
 						}
-					}
+					},
+					"fieldList": [
+						"childItems"
+					]
 				}
 			}
 		]
