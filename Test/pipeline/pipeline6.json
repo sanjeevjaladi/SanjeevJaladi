@@ -1,0 +1,81 @@
+{
+	"name": "pipeline6",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ADLS_DXC_NO_HEADER_ALL_FILES_DS",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "Source/Dept/",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Stored Procedure1",
+							"type": "SqlServerStoredProcedure",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[FILE_ENTRY]",
+								"storedProcedureParameters": {
+									"FILENAMES": {
+										"value": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ASQL_DXC_CONN",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		]
+	}
+}
