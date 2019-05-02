@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "dof_act_sp_abc_update_cyc_end",
+				"name": "ABC_CYC_END",
 				"type": "SqlServerStoredProcedure",
 				"policy": {
 					"timeout": "7.00:00:00",
