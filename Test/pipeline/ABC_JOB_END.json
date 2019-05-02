@@ -1,0 +1,109 @@
+{
+	"name": "ABC_JOB_END",
+	"properties": {
+		"activities": [
+			{
+				"name": "ABC_JOB_END",
+				"type": "SqlServerStoredProcedure",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[ABC].[UPDATE_JOB_END_NEW]",
+					"storedProcedureParameters": {
+						"DATA_READ": {
+							"value": {
+								"value": "@pipeline().parameters.DATA_READ",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"DATA_WRITTEN": {
+							"value": {
+								"value": "@pipeline().parameters.DATA_WRITTEN",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ERR_MSG": {
+							"value": {
+								"value": "@pipeline().parameters.ERR_MSG",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"JOB_SK": {
+							"value": {
+								"value": "@pipeline().parameters.JOB_SK",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"ROWS_LOADED": {
+							"value": {
+								"value": "@pipeline().parameters.ROWS_LOADED",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"ROWS_READ": {
+							"value": {
+								"value": "@pipeline().parameters.ROWS_READ",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"STATUS": {
+							"value": {
+								"value": "@pipeline().parameters.STATUS",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ASQL_ABC_LOGIC_CONN",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"JOB_SK": {
+				"type": "Int"
+			},
+			"STATUS": {
+				"type": "String"
+			},
+			"DATA_READ": {
+				"type": "String"
+			},
+			"DATA_WRITTEN": {
+				"type": "String"
+			},
+			"ROWS_READ": {
+				"type": "String"
+			},
+			"ROWS_LOADED": {
+				"type": "String"
+			},
+			"ERR_MSG": {
+				"type": "String"
+			},
+			"ABC_SCHEM": {
+				"type": "String"
+			},
+			"THROUGHPUT": {
+				"type": "Float",
+				"defaultValue": 0
+			}
+		},
+		"folder": {
+			"name": "ABC"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
