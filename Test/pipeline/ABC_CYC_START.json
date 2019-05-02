@@ -1,0 +1,53 @@
+{
+	"name": "ABC_CYC_START",
+	"properties": {
+		"activities": [
+			{
+				"name": "dof_act_sp_abc_update_cycle_start",
+				"description": "",
+				"type": "SqlServerStoredProcedure",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[ABC].[UPDATE_CYC_START_NEW]",
+					"storedProcedureParameters": {
+						"CYC_SK": {
+							"value": {
+								"value": "@pipeline().parameters.CYC_SK",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"FORCE_IND": {
+							"value": {
+								"value": "@pipeline().parameters.FORCE_IND",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ASQL_ABC_LOGIC_CONN",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"CYC_SK": {
+				"type": "Int"
+			},
+			"FORCE_IND": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "ABC"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
