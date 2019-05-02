@@ -1,0 +1,28 @@
+{
+	"name": "File_Share",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "File_Share",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FilesPath": {
+				"type": "string"
+			},
+			"FileNames": {
+				"type": "string"
+			}
+		},
+		"type": "FileShare",
+		"typeProperties": {
+			"fileName": {
+				"value": "@dataset().FileNames",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().FilesPath",
+				"type": "Expression"
+			}
+		}
+	}
+}
