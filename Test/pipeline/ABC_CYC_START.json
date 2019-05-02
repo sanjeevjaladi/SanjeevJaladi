@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "dof_act_sp_abc_update_cycle_start",
+				"name": "ABC_CYC_START",
 				"description": "",
 				"type": "SqlServerStoredProcedure",
 				"policy": {
