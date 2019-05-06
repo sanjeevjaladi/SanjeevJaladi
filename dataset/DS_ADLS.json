@@ -8,19 +8,12 @@
 		"parameters": {
 			"FilePath": {
 				"type": "string"
-			},
-			"FileNames": {
-				"type": "string"
 			}
 		},
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureDataLakeStoreLocation",
-				"fileName": {
-					"value": "@dataset().FileNames",
-					"type": "Expression"
-				},
 				"folderPath": {
 					"value": "@dataset().FilePath",
 					"type": "Expression"

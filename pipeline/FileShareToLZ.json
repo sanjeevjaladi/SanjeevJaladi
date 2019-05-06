@@ -176,7 +176,10 @@
 				"outputs": [
 					{
 						"referenceName": "DS_ADLS",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"FilePath": "Daimler/SAP/Landing"
+						}
 					}
 				]
 			}
