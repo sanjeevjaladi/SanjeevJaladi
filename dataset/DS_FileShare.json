@@ -18,14 +18,6 @@
 		},
 		"type": "FileShare",
 		"typeProperties": {
-			"format": {
-				"type": "TextFormat",
-				"columnDelimiter": ",",
-				"rowDelimiter": "",
-				"treatEmptyAsNull": true,
-				"skipLineCount": 0,
-				"firstRowAsHeader": false
-			},
 			"folderPath": {
 				"value": "@dataset().Path",
 				"type": "Expression"
