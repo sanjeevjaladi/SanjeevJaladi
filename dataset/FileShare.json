@@ -8,12 +8,26 @@
 		"parameters": {
 			"Path": {
 				"type": "string"
+			},
+			"FromDateTime": {
+				"type": "string"
+			},
+			"ToDateTime": {
+				"type": "string"
 			}
 		},
 		"type": "FileShare",
 		"typeProperties": {
 			"folderPath": {
 				"value": "@dataset().Path",
+				"type": "Expression"
+			},
+			"modifiedDatetimeStart": {
+				"value": "@dataset().FromDateTime",
+				"type": "Expression"
+			},
+			"modifiedDatetimeEnd": {
+				"value": "@dataset().ToDateTime",
 				"type": "Expression"
 			}
 		}

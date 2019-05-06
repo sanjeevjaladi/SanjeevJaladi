@@ -3,54 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "GetFileShareFiles",
-				"type": "GetMetadata",
-				"dependsOn": [
-					{
-						"activity": "GetCurrentDateTime",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "GetLastModifiedDateTime",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "FileShare",
-						"type": "DatasetReference",
-						"parameters": {
-							"Path": {
-								"value": "SAP",
-								"type": "Expression"
-							},
-							"FromDateTime": {
-								"value": "@variables('V_CurrentDateTime')",
-								"type": "Expression"
-							},
-							"ToDateTime": {
-								"value": "@utcnow()",
-								"type": "Expression"
-							}
-						}
-					},
-					"fieldList": [
-						"childItems"
-					]
-				}
-			},
-			{
 				"name": "GetCurrentDateTime",
 				"type": "SetVariable",
 				"typeProperties": {
@@ -84,7 +36,7 @@
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
 							"value": {
-								"value": "@utcnow()",
+								"value": "@adddays(utcnow(), -2)",
 								"type": "Expression"
 							},
 							"type": "DateTime"
@@ -114,6 +66,51 @@
 					"dataset": {
 						"referenceName": "DS_ZSQL_DXC",
 						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "GetFileShareFiles",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "GetLastModifiedDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetCurrentDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "SAP",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
 					}
 				}
 			}
