@@ -133,6 +133,7 @@
 						"value": "@activity('GetSAPFiles').output.childItems",
 						"type": "Expression"
 					},
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Lookup1",
@@ -148,7 +149,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "select FILENAME, FILEPATH from SAP_FIles\nwhere FILENAME = substring( @item().name, 1, len(FILENAME))",
+										"value": "select FILENAME, FILEPATH from SAP_FIles\nwhere FILENAME = substring( '@{item().name}', 1, len(FILENAME))",
 										"type": "Expression"
 									}
 								},
@@ -196,10 +197,10 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "DS_FileShare",
+									"referenceName": "DS_FileShare_FileName",
 									"type": "DatasetReference",
 									"parameters": {
-										"Path": {
+										"FilePath": {
 											"value": "SAP",
 											"type": "Expression"
 										},
@@ -210,17 +211,25 @@
 										"ToDateTime": {
 											"value": "@variables('V_CurrentDateTime')",
 											"type": "Expression"
+										},
+										"FileNames": {
+											"value": "@item().name",
+											"type": "Expression"
 										}
 									}
 								}
 							],
 							"outputs": [
 								{
-									"referenceName": "DS_ADLS",
+									"referenceName": "DS_ADLS_FileName",
 									"type": "DatasetReference",
 									"parameters": {
 										"FilePath": {
 											"value": "@concat('Daimler/SAP/Landing', activity('Lookup1').output.firstRow.FILEPATH)",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@item().name",
 											"type": "Expression"
 										}
 									}

@@ -1,5 +1,5 @@
 {
-	"name": "DS_ADLS",
+	"name": "DS_ADLS_FileName",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_ADLS",
@@ -8,12 +8,19 @@
 		"parameters": {
 			"FilePath": {
 				"type": "string"
+			},
+			"FileName": {
+				"type": "string"
 			}
 		},
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureDataLakeStoreLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
 				"folderPath": {
 					"value": "@dataset().FilePath",
 					"type": "Expression"

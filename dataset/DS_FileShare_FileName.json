@@ -1,0 +1,42 @@
+{
+	"name": "DS_FileShare_FileName",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_File_Share",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FilePath": {
+				"type": "string"
+			},
+			"FromDateTime": {
+				"type": "string"
+			},
+			"ToDateTime": {
+				"type": "string"
+			},
+			"FileNames": {
+				"type": "string"
+			}
+		},
+		"type": "FileShare",
+		"typeProperties": {
+			"fileName": {
+				"value": "@dataset().FileNames",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().FilePath",
+				"type": "Expression"
+			},
+			"modifiedDatetimeStart": {
+				"value": "@dataset().FromDateTime",
+				"type": "Expression"
+			},
+			"modifiedDatetimeEnd": {
+				"value": "@dataset().ToDateTime",
+				"type": "Expression"
+			}
+		}
+	}
+}
