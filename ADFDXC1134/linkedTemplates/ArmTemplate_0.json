@@ -156,6 +156,40 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FilePath": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureDataLakeStoreLocation",
+						"folderPath": {
+							"value": "@dataset().FilePath",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_FileShare')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -228,7 +262,7 @@
 						"type": "SqlServerStoredProcedure",
 						"dependsOn": [
 							{
-								"activity": "GetFileShareFiles",
+								"activity": "Copy Data1",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -331,6 +365,73 @@
 								"childItems"
 							]
 						}
+					},
+					{
+						"name": "Copy Data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "GetFileShareFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "FileSystemSource",
+								"recursive": true
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureDataLakeStoreWriteSetting"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSetting",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@utcnow()",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS",
+								"type": "DatasetReference",
+								"parameters": {
+									"FilePath": "Daimler/SAP/Landing"
+								}
+							}
+						]
 					}
 				],
 				"variables": {
@@ -346,7 +447,221 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_DXC')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ZSQL_DXC')]",
-				"[concat(variables('factoryId'), '/datasets/DS_FileShare')]"
+				"[concat(variables('factoryId'), '/datasets/DS_FileShare')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Stored Procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy Data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[concat('[', 'dbo].[SAP_Update_LZ_RunTime]')]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@adddays(utcnow(), -5)",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastModifiedDateTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select max(LZRunTime) LastModifiedDateTime from SAP_LZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_ZSQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "GetFileShareFiles",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "GetLastModifiedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@utcnow()",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Copy Data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "GetFileShareFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "FileSystemSource",
+								"recursive": true
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureDataLakeStoreWriteSetting"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSetting",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@utcnow()",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS",
+								"type": "DatasetReference",
+								"parameters": {
+									"FilePath": "Daimler/SAP/Landing"
+								}
+							}
+						]
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_DXC')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ZSQL_DXC')]",
+				"[concat(variables('factoryId'), '/datasets/DS_FileShare')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS')]"
 			]
 		}
 	]
