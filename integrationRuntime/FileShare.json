@@ -1,0 +1,6 @@
+{
+	"name": "FileShare",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
