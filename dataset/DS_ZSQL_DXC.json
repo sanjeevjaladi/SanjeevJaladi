@@ -1,0 +1,11 @@
+{
+	"name": "DS_ZSQL_DXC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_DXC",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
