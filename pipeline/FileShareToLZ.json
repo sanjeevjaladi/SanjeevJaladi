@@ -95,19 +95,11 @@
 				},
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "FileShare",
+						"referenceName": "DS_FileShare",
 						"type": "DatasetReference",
 						"parameters": {
 							"Path": {
 								"value": "SAP",
-								"type": "Expression"
-							},
-							"FromDateTime": {
-								"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
-								"type": "Expression"
-							},
-							"ToDateTime": {
-								"value": "@variables('V_CurrentDateTime')",
 								"type": "Expression"
 							}
 						}
