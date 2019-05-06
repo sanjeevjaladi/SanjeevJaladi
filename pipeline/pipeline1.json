@@ -16,6 +16,14 @@
 			{
 				"name": "Stored Procedure1",
 				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "EachFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -99,7 +107,7 @@
 								"type": "Expression"
 							},
 							"ToDateTime": {
-								"value": "@utcnow()",
+								"value": "@variables('V_CurrentDateTime')",
 								"type": "Expression"
 							}
 						}
@@ -124,7 +132,102 @@
 					"items": {
 						"value": "@activity('GetSAPFiles').output.firstRow.LastModifiedDateTime",
 						"type": "Expression"
-					}
+					},
+					"activities": [
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select FILENAME, FILEPATH from SAP_FIles\nwhere FILENAME = substring( @item().name, 1, len(FILENAME))",
+										"type": "Expression"
+									}
+								},
+								"dataset": {
+									"referenceName": "DS_ZSQL_DXC",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "Copy Data1",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Lookup1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"source": {
+									"type": "FileSystemSource",
+									"recursive": true
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureDataLakeStoreWriteSetting"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSetting",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_FileShare",
+									"type": "DatasetReference",
+									"parameters": {
+										"Path": {
+											"value": "SAP",
+											"type": "Expression"
+										},
+										"FromDateTime": {
+											"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+											"type": "Expression"
+										},
+										"ToDateTime": {
+											"value": "@variables('V_CurrentDateTime')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS",
+									"type": "DatasetReference",
+									"parameters": {
+										"FilePath": {
+											"value": "@concat('Daimler/SAP/Landing', activity('Lookup1').output.firstRow.FILEPATH)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
 				}
 			}
 		],
