@@ -61,7 +61,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select max(LZRunTime) from SAP_LZ_Runtime"
+						"sqlReaderQuery": "select max(LZRunTime) LastModifiedDateTime from SAP_LZ_Runtime"
 					},
 					"dataset": {
 						"referenceName": "DS_ZSQL_DXC",
@@ -103,11 +103,11 @@
 								"type": "Expression"
 							},
 							"FromDateTime": {
-								"value": "@variables('V_CurrentDateTime')",
+								"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
 								"type": "Expression"
 							},
 							"ToDateTime": {
-								"value": "@utcnow()",
+								"value": "@variables('V_CurrentDateTime')",
 								"type": "Expression"
 							}
 						}
