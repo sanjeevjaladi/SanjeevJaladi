@@ -225,7 +225,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FilePath": {
-											"value": "@concat('Daimler/SAP/Landing', activity('Lookup1').output.firstRow.FILEPATH)",
+											"value": "@concat('Daimler/SAP/Landing/', activity('Lookup1').output.firstRow.FILEPATH)",
 											"type": "Expression"
 										},
 										"FileName": {
