@@ -1,0 +1,213 @@
+{
+	"name": "pipeline2",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetCurrentDateTime",
+				"type": "SetVariable",
+				"typeProperties": {
+					"variableName": "V_CurrentDateTime",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Stored Procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "EachFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SAP_Update_LZ_RunTime]",
+					"storedProcedureParameters": {
+						"LastModifiedtime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "GetLastModifiedDateTime",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select max(LZRunTime) LastModifiedDateTime from SAP_LZ_Runtime"
+					},
+					"dataset": {
+						"referenceName": "DS_ZSQL_DXC",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "GetSAPFiles",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "GetLastModifiedDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetCurrentDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "SAP",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "EachFiles",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetSAPFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetSAPFiles').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Lookup1",
+							"type": "Lookup",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select FILENAME, FILEPATH from SAP_FIles\nwhere FILENAME = substring( '@{item().name}', 1, len(FILENAME))",
+										"type": "Expression"
+									}
+								},
+								"dataset": {
+									"referenceName": "DS_ZSQL_DXC",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": false
+							}
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Lookup1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline4",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"FILEPATH": {
+										"value": "@item().FILEPATH",
+										"type": "Expression"
+									},
+									"FILENAME": {
+										"value": "@item().name",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"V_CurrentDateTime": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "SAP"
+		}
+	}
+}
