@@ -130,7 +130,7 @@
 				],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('GetSAPFiles').output.firstRow.LastModifiedDateTime",
+						"value": "@activity('GetSAPFiles').output.childItems",
 						"type": "Expression"
 					},
 					"activities": [
