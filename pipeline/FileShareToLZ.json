@@ -36,7 +36,7 @@
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
 							"value": {
-								"value": "@adddays(utcnow(), -2)",
+								"value": "@adddays(utcnow(), -5)",
 								"type": "Expression"
 							},
 							"type": "DateTime"
@@ -101,9 +101,20 @@
 							"Path": {
 								"value": "SAP",
 								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@utcnow()",
+								"type": "Expression"
 							}
 						}
-					}
+					},
+					"fieldList": [
+						"childItems"
+					]
 				}
 			}
 		],
