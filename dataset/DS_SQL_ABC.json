@@ -1,0 +1,11 @@
+{
+	"name": "DS_SQL_ABC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_ABC",
+			"type": "LinkedServiceReference"
+		},
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
