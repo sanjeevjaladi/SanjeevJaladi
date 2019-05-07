@@ -102,7 +102,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FilePath": {
-											"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH)",
+											"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
 											"type": "Expression"
 										},
 										"FileName": {
