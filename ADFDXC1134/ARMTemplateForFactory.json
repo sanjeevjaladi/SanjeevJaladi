@@ -107,7 +107,7 @@
 							"storedProcedureParameters": {
 								"LastModifiedtime": {
 									"value": {
-										"value": "@utcnow()",
+										"value": "@variables('V_CurrentDateTime')",
 										"type": "Expression"
 									},
 									"type": "DateTime"
@@ -134,7 +134,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select max(LZRunTime) LastModifiedDateTime from SAP_LZ_Runtime"
+								"sqlReaderQuery": "select LZRunTime-6 LastModifiedDateTime from SAP_LZ_Runtime"
 							},
 							"dataset": {
 								"referenceName": "DS_SQL_DXC",
@@ -371,7 +371,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"FilePath": {
-													"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH)",
+													"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
 													"type": "Expression"
 												},
 												"FileName": {
