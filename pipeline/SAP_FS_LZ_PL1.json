@@ -36,7 +36,7 @@
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
 							"value": {
-								"value": "@adddays(utcnow(), -7)",
+								"value": "@utcnow()",
 								"type": "Expression"
 							},
 							"type": "DateTime"
