@@ -5,7 +5,7 @@
 		"factoryName": {
 			"type": "string",
 			"metadata": "Data Factory Name",
-			"defaultValue": "ADFDXC1134"
+			"defaultValue": "adfdxc1134"
 		},
 		"LS_ADLS_servicePrincipalKey": {
 			"type": "secureString",
@@ -22,6 +22,10 @@
 		"LS_File_Share_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_File_Share'"
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
 		},
 		"DS_FileShare_properties_typeProperties_folderPath": {
 			"type": "string",
@@ -112,6 +116,9 @@
 					},
 					"LS_ADLS_properties_typeProperties_resourceGroupName": {
 						"value": "[parameters('LS_ADLS_properties_typeProperties_resourceGroupName')]"
+					},
+					"DS_ADLS_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]"
 					},
 					"LS_File_Share_properties_typeProperties_userId": {
 						"value": "[parameters('LS_File_Share_properties_typeProperties_userId')]"

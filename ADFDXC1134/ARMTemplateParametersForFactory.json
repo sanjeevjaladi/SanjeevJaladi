@@ -3,7 +3,7 @@
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"factoryName": {
-			"value": "ADFDXC1134"
+			"value": "adfdxc1134"
 		},
 		"LS_ADLS_servicePrincipalKey": {
 			"value": ""
@@ -16,6 +16,9 @@
 		},
 		"LS_File_Share_password": {
 			"value": ""
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
 		},
 		"DS_FileShare_properties_typeProperties_folderPath": {
 			"value": "@dataset().Path"
