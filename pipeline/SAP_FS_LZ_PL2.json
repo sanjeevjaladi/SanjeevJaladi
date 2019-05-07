@@ -127,6 +127,9 @@
 			"ToDateTime": {
 				"type": "string"
 			}
+		},
+		"folder": {
+			"name": "SAP"
 		}
 	}
 }
