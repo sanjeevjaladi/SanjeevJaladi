@@ -36,7 +36,7 @@
 					"storedProcedureParameters": {
 						"LastModifiedtime": {
 							"value": {
-								"value": "@utcnow()",
+								"value": "@variables('V_CurrentDateTime')",
 								"type": "Expression"
 							},
 							"type": "DateTime"
