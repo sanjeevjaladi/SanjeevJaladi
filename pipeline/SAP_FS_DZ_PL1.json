@@ -21,29 +21,20 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Get Metadata2",
-							"type": "GetMetadata",
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
 							"typeProperties": {
-								"dataset": {
-									"referenceName": "DS_ADLS",
-									"type": "DatasetReference",
-									"parameters": {
-										"FilePath": {
-											"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
-											"type": "Expression"
-										}
-									}
+								"pipeline": {
+									"referenceName": "SAP_FS_DZ_PL2",
+									"type": "PipelineReference"
 								},
-								"fieldList": [
-									"childItems"
-								]
+								"waitOnCompletion": true,
+								"parameters": {
+									"FILEPATH": {
+										"value": "@item().FILEPATH",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					]
