@@ -61,7 +61,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select max(LZRunTime) LastModifiedDateTime from SAP_LZ_Runtime"
+						"sqlReaderQuery": "select LZRunTime-6 LastModifiedDateTime from SAP_LZ_Runtime"
 					},
 					"dataset": {
 						"referenceName": "DS_SQL_DXC",
