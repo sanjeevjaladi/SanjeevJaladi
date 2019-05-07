@@ -1,5 +1,5 @@
 {
-	"name": "DS_ZSQL_DXC",
+	"name": "DS_SQL_DXC",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_ASQL_DXC",
