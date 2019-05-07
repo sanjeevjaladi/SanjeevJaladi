@@ -71,6 +71,9 @@
 					"firstRowOnly": false
 				}
 			}
-		]
+		],
+		"folder": {
+			"name": "SAP"
+		}
 	}
 }
