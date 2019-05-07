@@ -5,10 +5,54 @@
 			{
 				"name": "Wait1",
 				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"typeProperties": {
 					"waitTimeInSeconds": 1
 				}
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@select FILENAME, FILEPATH from SAP_FIles\nwhere FILENAME = substring( 'pipeline().parameters.FILENAME', 1, len(FILENAME))",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "DS_ZSQL_DXC",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
 			}
-		]
+		],
+		"parameters": {
+			"FILENAME": {
+				"type": "string"
+			},
+			"FromDateTime": {
+				"type": "string"
+			},
+			"ToDateTime": {
+				"type": "string"
+			}
+		}
 	}
 }
