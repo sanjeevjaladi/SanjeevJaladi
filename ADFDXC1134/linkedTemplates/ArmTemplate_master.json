@@ -27,6 +27,14 @@
 			"type": "string",
 			"defaultValue": "@dataset().Path"
 		},
+		"DS_FileShare_FileName_properties_typeProperties_fileName": {
+			"type": "string",
+			"defaultValue": "@dataset().FileNames"
+		},
+		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
+		},
 		"LS_ADLS_properties_typeProperties_dataLakeStoreUri": {
 			"type": "string",
 			"defaultValue": "https://adlsdxc1134.azuredatalakestore.net/webhdfs/v1"
@@ -110,6 +118,12 @@
 					},
 					"DS_FileShare_properties_typeProperties_folderPath": {
 						"value": "[parameters('DS_FileShare_properties_typeProperties_folderPath')]"
+					},
+					"DS_FileShare_FileName_properties_typeProperties_fileName": {
+						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_fileName')]"
+					},
+					"DS_FileShare_FileName_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_folderPath')]"
 					}
 				}
 			},
