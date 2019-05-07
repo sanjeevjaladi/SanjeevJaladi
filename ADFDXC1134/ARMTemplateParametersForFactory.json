@@ -4,39 +4,6 @@
 	"parameters": {
 		"factoryName": {
 			"value": "ADFDXC1134"
-		},
-		"LS_ADLS_servicePrincipalKey": {
-			"value": ""
-		},
-		"LS_ASQL_ABC_connectionString": {
-			"value": ""
-		},
-		"LS_ASQL_DXC_connectionString": {
-			"value": ""
-		},
-		"LS_File_Share_password": {
-			"value": ""
-		},
-		"DS_FileShare_properties_typeProperties_folderPath": {
-			"value": "@dataset().Path"
-		},
-		"LS_ADLS_properties_typeProperties_dataLakeStoreUri": {
-			"value": "https://adlsdxc1134.azuredatalakestore.net/webhdfs/v1"
-		},
-		"LS_ADLS_properties_typeProperties_servicePrincipalId": {
-			"value": "fca6896e-ee6a-4875-898a-e17f21fd7b90"
-		},
-		"LS_ADLS_properties_typeProperties_tenant": {
-			"value": "93f33571-550f-43cf-b09f-cd331338d086"
-		},
-		"LS_ADLS_properties_typeProperties_subscriptionId": {
-			"value": "aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7"
-		},
-		"LS_ADLS_properties_typeProperties_resourceGroupName": {
-			"value": "RGDXC1134"
-		},
-		"LS_File_Share_properties_typeProperties_userId": {
-			"value": "sjaladi3@dxc.com"
 		}
 	}
 }
