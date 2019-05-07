@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2",
+	"name": "SAP_FS_LZ_PL1",
 	"properties": {
 		"activities": [
 			{
@@ -140,7 +140,7 @@
 							"type": "ExecutePipeline",
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pipeline4",
+									"referenceName": "SAP_FS_LZ_PL2",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true,
