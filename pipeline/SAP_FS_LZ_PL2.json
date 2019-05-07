@@ -28,7 +28,7 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "ForEachFilePath",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -45,7 +45,7 @@
 					},
 					"activities": [
 						{
-							"name": "Copy Data1",
+							"name": "CopyFilesFromFStoLZ",
 							"type": "Copy",
 							"policy": {
 								"timeout": "7.00:00:00",

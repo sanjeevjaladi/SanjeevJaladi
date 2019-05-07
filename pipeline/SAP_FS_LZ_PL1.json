@@ -136,7 +136,7 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Execute Pipeline1",
+							"name": "ExecuteSAP_FS_LZ_PL2",
 							"type": "ExecutePipeline",
 							"typeProperties": {
 								"pipeline": {
