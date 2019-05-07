@@ -1,0 +1,42 @@
+{
+	"name": "Cyc_Close",
+	"properties": {
+		"activities": [
+			{
+				"name": "Cyc_Close",
+				"type": "SqlServerStoredProcedure",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[ABC].[UPDATE_CYC_END_NEW]",
+					"storedProcedureParameters": {
+						"CYC_SK": {
+							"value": "@pipeline().parameters.CYC_SK",
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_ABC",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"CYC_SK": {
+				"type": "Int"
+			},
+			"ABC_SCHEM": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "ABC"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
