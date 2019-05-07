@@ -1,0 +1,55 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Step_Start",
+				"type": "SqlServerStoredProcedure",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[ABC].[UPDATE_STEP_START_NEW]",
+					"storedProcedureParameters": {
+						"FORCE_IND": {
+							"value": {
+								"value": "@pipeline().parameters.FORCE_IND",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"STEP_SK": {
+							"value": {
+								"value": "@pipeline().parameters.STEP_SK",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_ABC",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"STEP_SK": {
+				"type": "Int"
+			},
+			"FORCE_IND": {
+				"type": "String"
+			},
+			"ABC_SCHEM": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "ABC"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
