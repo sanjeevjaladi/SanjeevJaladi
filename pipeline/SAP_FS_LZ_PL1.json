@@ -14,7 +14,7 @@
 				}
 			},
 			{
-				"name": "Stored Procedure1",
+				"name": "SetCurrentDateTime",
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
