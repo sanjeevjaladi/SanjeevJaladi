@@ -13,6 +13,151 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachFile",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select FILENAME, FILEPATH from SAP_FIles where FILENAME = substring( '@{pipeline().parameters.FILENAME}', 1, len(FILENAME))",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachFilePath",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ForEachFile",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ForEachFile').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CopyFilesFromFStoLZ",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSetting"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSetting",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.FromDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.ToDateTime",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"FILENAME": {
+						"type": "string"
+					},
+					"FromDateTime": {
+						"type": "string"
+					},
+					"ToDateTime": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -32,7 +177,7 @@
 						}
 					},
 					{
-						"name": "Stored Procedure1",
+						"name": "SetCurrentDateTime",
 						"type": "SqlServerStoredProcedure",
 						"dependsOn": [
 							{
@@ -68,7 +213,7 @@
 						}
 					},
 					{
-						"name": "GetLastModifiedDateTime",
+						"name": "GetLastProcessedDateTime",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -96,7 +241,7 @@
 						"type": "GetMetadata",
 						"dependsOn": [
 							{
-								"activity": "GetLastModifiedDateTime",
+								"activity": "GetLastProcessedDateTime",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -126,7 +271,7 @@
 										"type": "Expression"
 									},
 									"FromDateTime": {
-										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
 										"type": "Expression"
 									},
 									"ToDateTime": {
@@ -176,7 +321,7 @@
 												"type": "Expression"
 											},
 											"FromDateTime": {
-												"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+												"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
 												"type": "Expression"
 											},
 											"ToDateTime": {
@@ -200,7 +345,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SAP_FS_LZ_PL2')]"
+			]
 		}
 	]
 }

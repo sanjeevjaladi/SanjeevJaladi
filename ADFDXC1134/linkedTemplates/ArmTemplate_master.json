@@ -63,6 +63,10 @@
 			"type": "string",
 			"defaultValue": "sjaladi3@dxc.com"
 		},
+		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -122,6 +126,9 @@
 					},
 					"LS_File_Share_properties_typeProperties_userId": {
 						"value": "[parameters('LS_File_Share_properties_typeProperties_userId')]"
+					},
+					"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath')]"
 					},
 					"DS_FileShare_properties_typeProperties_folderPath": {
 						"value": "[parameters('DS_FileShare_properties_typeProperties_folderPath')]"

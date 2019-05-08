@@ -47,6 +47,9 @@
 		"LS_File_Share_properties_typeProperties_userId": {
 			"value": "sjaladi3@dxc.com"
 		},
+		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
+		},
 		"containerUri": {
 			"value": ""
 		},
