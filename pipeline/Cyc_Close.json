@@ -15,7 +15,10 @@
 					"storedProcedureName": "[ABC].[UPDATE_CYC_END_NEW]",
 					"storedProcedureParameters": {
 						"CYC_SK": {
-							"value": "@pipeline().parameters.CYC_SK",
+							"value": {
+								"value": "@pipeline().parameters.CYC_SK",
+								"type": "Expression"
+							},
 							"type": "Int32"
 						}
 					}
@@ -29,9 +32,6 @@
 		"parameters": {
 			"CYC_SK": {
 				"type": "Int"
-			},
-			"ABC_SCHEM": {
-				"type": "String"
 			}
 		},
 		"folder": {

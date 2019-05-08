@@ -42,9 +42,6 @@
 			},
 			"FORCE_IND": {
 				"type": "String"
-			},
-			"ABC_SCHEM": {
-				"type": "String"
 			}
 		},
 		"folder": {
