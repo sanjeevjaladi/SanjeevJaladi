@@ -1,0 +1,43 @@
+{
+	"name": "DS_ADLS_From_To_DateTime",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FilePath": {
+				"type": "string"
+			},
+			"FromDateTime": {
+				"type": "string"
+			},
+			"ToDateTime": {
+				"type": "string"
+			}
+		},
+		"type": "AzureDataLakeStoreFile",
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": false
+			},
+			"folderPath": {
+				"value": "@dataset().FilePath",
+				"type": "Expression"
+			},
+			"modifiedDatetimeStart": {
+				"value": "@dataset().FromDateTime",
+				"type": "Expression"
+			},
+			"modifiedDatetimeEnd": {
+				"value": "@dataset().ToDateTime",
+				"type": "Expression"
+			}
+		}
+	}
+}

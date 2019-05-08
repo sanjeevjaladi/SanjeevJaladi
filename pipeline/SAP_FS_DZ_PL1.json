@@ -11,6 +11,18 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "GetCurrentDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetLastModifiedDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"typeProperties": {
@@ -32,6 +44,14 @@
 								"parameters": {
 									"FILEPATH": {
 										"value": "@item().FILEPATH",
+										"type": "Expression"
+									},
+									"CurrentDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"LastModifiedDateTime": {
+										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
 										"type": "Expression"
 									}
 								}
@@ -61,8 +81,80 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "GetCurrentDateTime",
+				"type": "SetVariable",
+				"typeProperties": {
+					"variableName": "V_CurrentDateTime",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetCurrentDateTime",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachFolder",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SAP_Update_DZ_RunTime]",
+					"storedProcedureParameters": {
+						"LastModifiedtime": {
+							"value": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "GetLastModifiedDateTime",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select DZRunTime-6 LastModifiedDateTime from SAP_DZ_Runtime"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_DXC",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
+		"variables": {
+			"V_CurrentDateTime": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "SAP"
 		}

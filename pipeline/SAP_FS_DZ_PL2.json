@@ -14,11 +14,19 @@
 				},
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "DS_ADLS",
+						"referenceName": "DS_ADLS_From_To_DateTime",
 						"type": "DatasetReference",
 						"parameters": {
 							"FilePath": {
 								"value": "@concat('Daimler/SAP/Landing/', pipeline().parameters.FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@pipeline().parameters.LastModifiedDateTime",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@pipeline().parameters.CurrentDateTime",
 								"type": "Expression"
 							}
 						}
@@ -67,11 +75,19 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "DS_ADLS",
+									"referenceName": "DS_ADLS_From_To_DateTime",
 									"type": "DatasetReference",
 									"parameters": {
 										"FilePath": {
 											"value": "@concat('Daimler/SAP/Landing/', pipeline().parameters.FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+											"type": "Expression"
+										},
+										"FromDateTime": {
+											"value": "@pipeline().parameters.LastModifiedDateTime",
+											"type": "Expression"
+										},
+										"ToDateTime": {
+											"value": "@pipeline().parameters.CurrentDateTime",
 											"type": "Expression"
 										}
 									}
@@ -96,6 +112,12 @@
 		],
 		"parameters": {
 			"FILEPATH": {
+				"type": "string"
+			},
+			"CurrentDateTime": {
+				"type": "string"
+			},
+			"LastModifiedDateTime": {
 				"type": "string"
 			}
 		},
