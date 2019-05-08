@@ -49,7 +49,7 @@
 				}
 			},
 			{
-				"name": "GetLastModifiedDateTime",
+				"name": "GetLastProcessedDateTime",
 				"type": "Lookup",
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -74,7 +74,7 @@
 				"type": "GetMetadata",
 				"dependsOn": [
 					{
-						"activity": "GetLastModifiedDateTime",
+						"activity": "GetLastProcessedDateTime",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -103,7 +103,7 @@
 								"type": "Expression"
 							},
 							"FromDateTime": {
-								"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+								"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
 								"type": "Expression"
 							},
 							"ToDateTime": {
@@ -150,7 +150,7 @@
 										"type": "Expression"
 									},
 									"FromDateTime": {
-										"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
 										"type": "Expression"
 									},
 									"ToDateTime": {
