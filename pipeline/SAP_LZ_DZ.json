@@ -1,3 +1,8 @@
 {
-	"name": "SAP_LZ_DZ"
+	"name": "SAP_LZ_DZ",
+	"properties": {
+		"folder": {
+			"name": "SAP"
+		}
+	}
 }
