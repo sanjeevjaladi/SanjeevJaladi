@@ -68,11 +68,12 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"FilePath": {
-								"value": "Daimler/SAP/",
+								"value": "Daimler/SAP/Landing",
 								"type": "Expression"
 							}
 						}
 					},
+					"recursive": true,
 					"enableLogging": false
 				}
 			}
