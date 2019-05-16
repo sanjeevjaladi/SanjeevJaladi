@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "adfdxc1134"
 		},
+		"LS_File_Share_password": {
+			"value": ""
+		},
 		"LS_ADLS_servicePrincipalKey": {
 			"value": ""
 		},
@@ -14,20 +17,8 @@
 		"LS_ASQL_DXC_connectionString": {
 			"value": ""
 		},
-		"LS_File_Share_password": {
-			"value": ""
-		},
-		"DS_ADLS_properties_typeProperties_folderPath": {
-			"value": "@dataset().FilePath"
-		},
-		"DS_FileShare_properties_typeProperties_folderPath": {
-			"value": "@dataset().Path"
-		},
-		"DS_FileShare_FileName_properties_typeProperties_fileName": {
-			"value": "@dataset().FileNames"
-		},
-		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
-			"value": "@dataset().FilePath"
+		"LS_File_Share_properties_typeProperties_userId": {
+			"value": "sjaladi3@dxc.com"
 		},
 		"LS_ADLS_properties_typeProperties_dataLakeStoreUri": {
 			"value": "https://adlsdxc1134.azuredatalakestore.net/webhdfs/v1"
@@ -44,8 +35,17 @@
 		"LS_ADLS_properties_typeProperties_resourceGroupName": {
 			"value": "RGDXC1134"
 		},
-		"LS_File_Share_properties_typeProperties_userId": {
-			"value": "sjaladi3@dxc.com"
+		"DS_FileShare_properties_typeProperties_folderPath": {
+			"value": "@dataset().Path"
+		},
+		"DS_FileShare_FileName_properties_typeProperties_fileName": {
+			"value": "@dataset().FileNames"
+		},
+		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
 		},
 		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
 			"value": "@dataset().FilePath"

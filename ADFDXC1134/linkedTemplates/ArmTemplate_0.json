@@ -43,13 +43,13 @@
 			"type": "string",
 			"defaultValue": "RGDXC1134"
 		},
-		"DS_ADLS_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().FilePath"
-		},
 		"LS_File_Share_properties_typeProperties_userId": {
 			"type": "string",
 			"defaultValue": "sjaladi3@dxc.com"
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
 		},
 		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
 			"type": "string",
@@ -72,6 +72,16 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/FileShare')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LS_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -120,68 +130,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/FileShare')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Cyc_Close')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Cyc_Close",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_CYC_END_NEW]')]",
-							"storedProcedureParameters": {
-								"CYC_SK": {
-									"value": {
-										"value": "@pipeline().parameters.CYC_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "LS_ASQL_ABC",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"CYC_SK": {
-						"type": "Int"
-					},
-					"ABC_SCHEM": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "ABC"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Cyc_Start')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -200,7 +148,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_CYC_START_NEW]')]",
+							"storedProcedureName": "[[ABC].[UPDATE_CYC_START_NEW]",
 							"storedProcedureParameters": {
 								"CYC_SK": {
 									"value": {
@@ -245,6 +193,130 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Job_Start')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Job_Start",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[ABC].[UPDATE_JOB_START_NEW]",
+							"storedProcedureParameters": {
+								"JOB_SK": {
+									"value": {
+										"value": "@pipeline().parameters.JOB_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"PL_RUN_ID": {
+									"value": {
+										"value": "@pipeline().parameters.PL_RUN_ID",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"STEP_SK": {
+									"value": {
+										"value": "@pipeline().parameters.STEP_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_ABC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"JOB_SK": {
+						"type": "Int"
+					},
+					"PL_RUN_ID": {
+						"type": "String"
+					},
+					"STEP_SK": {
+						"type": "Int"
+					},
+					"ABC_SCHEM": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "ABC"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Cyc_Close')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Cyc_Close",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[ABC].[UPDATE_CYC_END_NEW]",
+							"storedProcedureParameters": {
+								"CYC_SK": {
+									"value": {
+										"value": "@pipeline().parameters.CYC_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_ABC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"CYC_SK": {
+						"type": "Int"
+					},
+					"ABC_SCHEM": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "ABC"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Job_End')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -262,7 +334,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_JOB_END_NEW]')]",
+							"storedProcedureName": "[[ABC].[UPDATE_JOB_END_NEW]",
 							"storedProcedureParameters": {
 								"DATA_READ": {
 									"value": {
@@ -368,78 +440,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Job_Start')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Job_Start",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_JOB_START_NEW]')]",
-							"storedProcedureParameters": {
-								"JOB_SK": {
-									"value": {
-										"value": "@pipeline().parameters.JOB_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"PL_RUN_ID": {
-									"value": {
-										"value": "@pipeline().parameters.PL_RUN_ID",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"STEP_SK": {
-									"value": {
-										"value": "@pipeline().parameters.STEP_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "LS_ASQL_ABC",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"JOB_SK": {
-						"type": "Int"
-					},
-					"PL_RUN_ID": {
-						"type": "String"
-					},
-					"STEP_SK": {
-						"type": "Int"
-					},
-					"ABC_SCHEM": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "ABC"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Step_End')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -457,7 +457,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_STEP_END_NEW]')]",
+							"storedProcedureName": "[[ABC].[UPDATE_STEP_END_NEW]",
 							"storedProcedureParameters": {
 								"STATUS": {
 									"value": {
@@ -519,7 +519,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'ABC].[UPDATE_STEP_START_NEW]')]",
+							"storedProcedureName": "[[ABC].[UPDATE_STEP_START_NEW]",
 							"storedProcedureParameters": {
 								"FORCE_IND": {
 									"value": {
@@ -564,38 +564,27 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_ADLS')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/LS_File_Share')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ADLS",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"FilePath": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
-				"type": "AzureDataLakeStoreFile",
+				"type": "FileServer",
 				"typeProperties": {
-					"format": {
-						"type": "TextFormat",
-						"columnDelimiter": ",",
-						"rowDelimiter": "",
-						"treatEmptyAsNull": true,
-						"skipLineCount": 0,
-						"firstRowAsHeader": false
-					},
-					"folderPath": {
-						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]",
-						"type": "Expression"
+					"host": "C:\\File_Share",
+					"userId": "[parameters('LS_File_Share_properties_typeProperties_userId')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_File_Share_password')]"
 					}
+				},
+				"connectVia": {
+					"referenceName": "FileShare",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/FileShare')]"
 			]
 		},
 		{
@@ -640,24 +629,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_SQL_ABC')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ASQL_ABC",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/DS_SQL_DXC')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -676,27 +647,56 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/LS_File_Share')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "FileServer",
-				"typeProperties": {
-					"host": "C:\\File_Share",
-					"userId": "[parameters('LS_File_Share_properties_typeProperties_userId')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LS_File_Share_password')]"
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"FilePath": {
+						"type": "string"
 					}
 				},
-				"connectVia": {
-					"referenceName": "FileShare",
-					"type": "IntegrationRuntimeReference"
+				"annotations": [],
+				"type": "AzureDataLakeStoreFile",
+				"typeProperties": {
+					"format": {
+						"type": "TextFormat",
+						"columnDelimiter": ",",
+						"rowDelimiter": "",
+						"treatEmptyAsNull": true,
+						"skipLineCount": 0,
+						"firstRowAsHeader": false
+					},
+					"folderPath": {
+						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/FileShare')]"
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_ABC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_ABC",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
 			]
 		},
 		{
@@ -978,74 +978,13 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SAP_FS_DZ_PL1')]",
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "ForEachFolder",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "GetFolderNames",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "GetCurrentDateTime",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "GetLastModifiedDateTime",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('GetFolderNames').output.value",
-								"type": "Expression"
-							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "ExecuteSAP_FS_DZ_PL2",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "SAP_FS_DZ_PL2",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {
-											"FILEPATH": {
-												"value": "@item().FILEPATH",
-												"type": "Expression"
-											},
-											"CurrentDateTime": {
-												"value": "@variables('V_CurrentDateTime')",
-												"type": "Expression"
-											},
-											"LastModifiedDateTime": {
-												"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
-												"type": "Expression"
-											}
-										}
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "GetFolderNames",
+						"name": "ForEachFile",
 						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
@@ -1059,7 +998,10 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select FILENAME, FILEPATH from SAP_FIles "
+								"sqlReaderQuery": {
+									"value": "select FILENAME, FILEPATH from SAP_FIles where FILENAME = substring( '@{pipeline().parameters.FILENAME}', 1, len(FILENAME))",
+									"type": "Expression"
+								}
 							},
 							"dataset": {
 								"referenceName": "DS_SQL_DXC",
@@ -1070,82 +1012,107 @@
 						}
 					},
 					{
-						"name": "GetCurrentDateTime",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "V_CurrentDateTime",
-							"value": {
-								"value": "@utcnow()",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "SetCurrentDateTime",
-						"type": "SqlServerStoredProcedure",
+						"name": "ForEachFilePath",
+						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "ForEachFolder",
+								"activity": "ForEachFile",
 								"dependencyConditions": [
 									"Succeeded"
 								]
 							}
 						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
 						"userProperties": [],
 						"typeProperties": {
-							"storedProcedureName": "[concat('[', 'dbo].[SAP_Update_DZ_RunTime]')]",
-							"storedProcedureParameters": {
-								"LastModifiedtime": {
-									"value": {
-										"value": "@variables('V_CurrentDateTime')",
-										"type": "Expression"
-									},
-									"type": "DateTime"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "LS_ASQL_DXC",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "GetLastModifiedDateTime",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select DZRunTime-6 LastModifiedDateTime from SAP_DZ_Runtime"
+							"items": {
+								"value": "@activity('ForEachFile').output.value",
+								"type": "Expression"
 							},
-							"dataset": {
-								"referenceName": "DS_SQL_DXC",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
+							"activities": [
+								{
+									"name": "CopyFilesFromFStoLZ",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSetting"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSetting",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.FromDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.ToDateTime",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
 						}
 					}
 				],
-				"variables": {
-					"V_CurrentDateTime": {
-						"type": "String"
+				"parameters": {
+					"FILENAME": {
+						"type": "string"
+					},
+					"FromDateTime": {
+						"type": "string"
+					},
+					"ToDateTime": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -1155,8 +1122,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_SQL_DXC')]",
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_DXC')]",
-				"[concat(variables('factoryId'), '/pipelines/SAP_FS_DZ_PL2')]"
+				"[concat(variables('factoryId'), '/datasets/DS_FileShare_FileName')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_FileName')]"
 			]
 		}
 	]
