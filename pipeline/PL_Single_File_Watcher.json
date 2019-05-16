@@ -57,7 +57,49 @@
 							}
 						}
 					],
-					"timeout": "00.00:02:00"
+					"timeout": "00.00:01:00"
+				}
+			},
+			{
+				"name": "IfCondition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Check_For_File",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"typeProperties": {
+					"expression": {
+						"value": "@activity('Check_For_File_Exist').output.Exists",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "No_ACK_File",
+							"type": "Wait",
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Call_Next_Pipeline",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Check_For_File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
 				}
 			}
 		],
