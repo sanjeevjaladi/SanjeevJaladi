@@ -53,7 +53,7 @@
 								}
 							],
 							"typeProperties": {
-								"waitTimeInSeconds": 5
+								"waitTimeInSeconds": 30
 							}
 						}
 					],
