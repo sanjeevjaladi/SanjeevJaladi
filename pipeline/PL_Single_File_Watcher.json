@@ -70,6 +70,9 @@
 				"type": "string",
 				"defaultValue": "Source\\Sample_Files"
 			}
+		},
+		"folder": {
+			"name": "FIle Watcher"
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
