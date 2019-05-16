@@ -1,0 +1,182 @@
+{
+	"name": "PL_Multiple_File_Watcher",
+	"properties": {
+		"activities": [
+			{
+				"name": "Check_For_Files",
+				"type": "Until",
+				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(length(variables('V_File_Name_1')),1), equals(length(variables('V_File_Name_2')),1) )",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get_File_Names",
+							"type": "GetMetadata",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_ADLS",
+									"type": "DatasetReference",
+									"parameters": {
+										"FilePath": {
+											"value": "Source\\Sample_Files",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								]
+							}
+						},
+						{
+							"name": "Check_For_File_1",
+							"type": "Filter",
+							"dependsOn": [
+								{
+									"activity": "Get_File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"items": {
+									"value": "@activity('Get_File_Names').output.Childitems",
+									"type": "Expression"
+								},
+								"condition": {
+									"value": "@contains(item().name, 'ACK_File_1_Something.txt1')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Check_For_File_2",
+							"type": "Filter",
+							"dependsOn": [
+								{
+									"activity": "Get_File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"items": {
+									"value": "@activity('Get_File_Names').output.Childitems",
+									"type": "Expression"
+								},
+								"condition": {
+									"value": "@contains(item().name, 'ACK_File_1_SomethingElse.txt')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "File_Name_1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check_For_File_1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"variableName": "V_File_Name_1",
+								"value": {
+									"value": "@activity('Check_For_File_1').output.Value",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "File_Name_2",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check_For_File_2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"variableName": "V_File_Name_2",
+								"value": {
+									"value": "@activity('Check_For_File_2').output.Value",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "File_Name_1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								},
+								{
+									"activity": "File_Name_2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"expression": {
+									"value": "@and(equals(length(variables('V_File_Name_1')),1), equals(length(variables('V_File_Name_2')),1) )",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Wait_For_Files",
+										"type": "Wait",
+										"typeProperties": {
+											"waitTimeInSeconds": 30
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Call_Pipeline",
+										"type": "Wait",
+										"typeProperties": {
+											"waitTimeInSeconds": 1
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "00.00:02:00"
+				}
+			}
+		],
+		"variables": {
+			"V_File_Name_2": {
+				"type": "Array"
+			},
+			"V_File_Name_1": {
+				"type": "Array"
+			}
+		},
+		"folder": {
+			"name": "FIle Watcher"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
