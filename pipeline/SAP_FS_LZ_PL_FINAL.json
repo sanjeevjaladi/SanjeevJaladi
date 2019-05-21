@@ -1,0 +1,187 @@
+{
+	"name": "SAP_FS_LZ_PL_FINAL",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetCurrentDateTime",
+				"type": "SetVariable",
+				"typeProperties": {
+					"variableName": "V_CurrentDateTime",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SetCurrentDateTime",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "EachFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SAP_Update_LZ_RunTime]",
+					"storedProcedureParameters": {
+						"LastModifiedtime": {
+							"value": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "GetLastProcessedDateTime",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select LZRunTime-16 LastModifiedDateTime from SAP_LZ_Runtime"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_DXC",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "GetSAPFiles",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "GetLastProcessedDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "GetCurrentDateTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "SAP",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "EachFiles",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetSAPFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetSAPFiles').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "ExecutePipeline1",
+							"type": "ExecutePipeline",
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "SAP_FS_LZ_PL_FINAL2",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"TRANS_NO": {
+										"value": "@split(item().name, '_')[1] ",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"PLANT_NO": {
+										"value": "@split(item().name, '_')[3]",
+										"type": "Expression"
+									},
+									"FileName": {
+										"value": "@item().name",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"V_CurrentDateTime": {
+				"type": "String"
+			},
+			"V_PlantNo": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "SAP"
+		}
+	}
+}

@@ -16,7 +16,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select FILENAME, FILEPATH from SAP_FIles where FILENAME = substring( '@{pipeline().parameters.FILENAME}', 1, len(FILENAME))",
+							"value": "SELECT \nTRANS_NO, \nPLANT_NO, \nFOLDER_PATH\n FROM \nSAP_FOLDER_MAPPING\nWHERE \nTRANS_NO = pipeline().parameters.TRANS_NO AND \nPLANT_NO = pipeline().parameters.PLANT_NO",
 							"type": "Expression"
 						}
 					},
@@ -102,7 +102,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FilePath": {
-											"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+											"value": "@concat('Daimler/SAP/Landing/', item().FOLDER_PATH, '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
 											"type": "Expression"
 										},
 										"FileName": {
@@ -118,13 +118,19 @@
 			}
 		],
 		"parameters": {
-			"FILENAME": {
+			"TRANS_NO": {
 				"type": "string"
 			},
 			"FromDateTime": {
 				"type": "string"
 			},
 			"ToDateTime": {
+				"type": "string"
+			},
+			"PLANT_NO": {
+				"type": "string"
+			},
+			"FileName": {
 				"type": "string"
 			}
 		},
