@@ -1,0 +1,47 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@DELETE \n\tpipeline().parameters.TABLE_NAME\nWHERE\n\tCONVERT(DATE, pipeline().parameters.DATE _COLUMN_NAME) >= CONVERT(DATE, pipeline().parameters.DATE_VALUE)",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_DXC",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"TABLE_NAME": {
+				"type": "string",
+				"defaultValue": "Date_TEST_TBD"
+			},
+			"DATE _COLUMN_NAME": {
+				"type": "string",
+				"defaultValue": "AuditDate"
+			},
+			"DATE_VALUE": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "PT R&D"
+		}
+	}
+}
