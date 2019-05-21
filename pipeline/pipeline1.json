@@ -16,7 +16,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "@DELETE \n\tpipeline().parameters.TABLE_NAME\nWHERE\n\tCONVERT(DATE, pipeline().parameters.DATE _COLUMN_NAME) >= CONVERT(DATE, pipeline().parameters.DATE_VALUE)",
+							"value": "DELETE @{pipeline().parameters.TABLE_NAME} WHERE CONVERT(DATE, @{pipeline().parameters.DATE_COLUMN_NAME} ) >= CONVERT(DATE, '@{pipeline().parameters.DATE_VALUE}')",
 							"type": "Expression"
 						}
 					},
@@ -32,12 +32,13 @@
 				"type": "string",
 				"defaultValue": "Date_TEST_TBD"
 			},
-			"DATE _COLUMN_NAME": {
+			"DATE_VALUE": {
+				"type": "string",
+				"defaultValue": "2019-05-20"
+			},
+			"DATE_COLUMN_NAME": {
 				"type": "string",
 				"defaultValue": "AuditDate"
-			},
-			"DATE_VALUE": {
-				"type": "string"
 			}
 		},
 		"folder": {
