@@ -15,6 +15,14 @@
 		},
 		"type": "AzureDataLakeStoreFile",
 		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": false
+			},
 			"fileName": {
 				"value": "@dataset().File_Name",
 				"type": "Expression"

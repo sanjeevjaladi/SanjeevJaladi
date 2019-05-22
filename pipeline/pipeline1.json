@@ -3,8 +3,57 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup1",
-				"type": "Lookup",
+				"name": "Stored Procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy Data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[DELETERECORDS]",
+					"storedProcedureParameters": {
+						"COLUMN_NAME": {
+							"value": {
+								"value": "@pipeline().parameters.COLUMN_NAME",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"DATE_VALUE": {
+							"value": {
+								"value": "@pipeline().parameters.DATE_VALUE",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Table_Name": {
+							"value": {
+								"value": "@pipeline().parameters.TABLE_NAME",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy Data1",
+				"type": "Copy",
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -16,15 +65,37 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "DELETE @{pipeline().parameters.TABLE_NAME} WHERE CONVERT(DATE, @{pipeline().parameters.DATE_COLUMN_NAME} ) >= CONVERT(DATE, '@{pipeline().parameters.DATE_VALUE}')",
+							"value": "SELECT  * FROM @{pipeline().parameters.TABLE_NAME} WHERE @{pipeline().parameters.COLUMN_NAME} >= '@{pipeline().parameters.DATE_VALUE}'",
 							"type": "Expression"
 						}
 					},
-					"dataset": {
+					"sink": {
+						"type": "AzureDataLakeStoreSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
 						"referenceName": "DS_SQL_DXC",
 						"type": "DatasetReference"
 					}
-				}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_File_Name",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Name": {
+								"value": "@concat('Deleted_Records_', pipeline().parameters.DATE_VALUE)",
+								"type": "Expression"
+							},
+							"File_Path": {
+								"value": "@concat(pipeline().parameters.TABLE_NAME, '_', pipeline().parameters.DATE_VALUE)",
+								"type": "Expression"
+							}
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
@@ -36,7 +107,7 @@
 				"type": "string",
 				"defaultValue": "2019-05-20"
 			},
-			"DATE_COLUMN_NAME": {
+			"COLUMN_NAME": {
 				"type": "string",
 				"defaultValue": "AuditDate"
 			}
