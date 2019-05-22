@@ -17,7 +17,7 @@
 		"typeProperties": {
 			"format": {
 				"type": "TextFormat",
-				"columnDelimiter": ",",
+				"columnDelimiter": "|",
 				"rowDelimiter": "",
 				"treatEmptyAsNull": true,
 				"skipLineCount": 0,
