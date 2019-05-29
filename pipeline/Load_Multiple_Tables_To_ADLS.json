@@ -247,7 +247,7 @@
 														"type": "Expression"
 													},
 													"File_Path": {
-														"value": "@item().TABLE_NAME",
+														"value": "@concat('Tables_Date', '\\', item().TABLE_NAME)",
 														"type": "Expression"
 													}
 												}
