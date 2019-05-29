@@ -334,7 +334,10 @@
 					]
 				}
 			}
-		]
+		],
+		"folder": {
+			"name": "R&D"
+		}
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
