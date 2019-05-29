@@ -7,10 +7,6 @@
 			"metadata": "Data Factory Name",
 			"defaultValue": "adfdxc1134"
 		},
-		"LS_File_Share_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LS_File_Share'"
-		},
 		"LS_ADLS_servicePrincipalKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'servicePrincipalKey' of 'LS_ADLS'"
@@ -23,9 +19,37 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LS_ASQL_DXC'"
 		},
-		"LS_File_Share_properties_typeProperties_userId": {
+		"LS_File_Share_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_File_Share'"
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
 			"type": "string",
-			"defaultValue": "sjaladi3@dxc.com"
+			"defaultValue": "@dataset().FilePath"
+		},
+		"DS_ADLS_File_Name_properties_typeProperties_fileName": {
+			"type": "string",
+			"defaultValue": "@dataset().File_Name"
+		},
+		"DS_ADLS_File_Name_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().File_Path"
+		},
+		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
+		},
+		"DS_FileShare_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().Path"
+		},
+		"DS_FileShare_FileName_properties_typeProperties_fileName": {
+			"type": "string",
+			"defaultValue": "@dataset().FileNames"
+		},
+		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
+			"type": "string",
+			"defaultValue": "@dataset().FilePath"
 		},
 		"LS_ADLS_properties_typeProperties_dataLakeStoreUri": {
 			"type": "string",
@@ -47,25 +71,9 @@
 			"type": "string",
 			"defaultValue": "RGDXC1134"
 		},
-		"DS_FileShare_properties_typeProperties_folderPath": {
+		"LS_File_Share_properties_typeProperties_userId": {
 			"type": "string",
-			"defaultValue": "@dataset().Path"
-		},
-		"DS_FileShare_FileName_properties_typeProperties_fileName": {
-			"type": "string",
-			"defaultValue": "@dataset().FileNames"
-		},
-		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().FilePath"
-		},
-		"DS_ADLS_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().FilePath"
-		},
-		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().FilePath"
+			"defaultValue": "sjaladi3@dxc.com"
 		},
 		"containerUri": {
 			"type": "string",
@@ -121,23 +129,20 @@
 					"LS_ADLS_properties_typeProperties_resourceGroupName": {
 						"value": "[parameters('LS_ADLS_properties_typeProperties_resourceGroupName')]"
 					},
-					"LS_File_Share_properties_typeProperties_userId": {
-						"value": "[parameters('LS_File_Share_properties_typeProperties_userId')]"
-					},
 					"DS_ADLS_properties_typeProperties_folderPath": {
 						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]"
+					},
+					"DS_ADLS_File_Name_properties_typeProperties_fileName": {
+						"value": "[parameters('DS_ADLS_File_Name_properties_typeProperties_fileName')]"
+					},
+					"DS_ADLS_File_Name_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_ADLS_File_Name_properties_typeProperties_folderPath')]"
 					},
 					"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
 						"value": "[parameters('DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath')]"
 					},
-					"DS_FileShare_properties_typeProperties_folderPath": {
-						"value": "[parameters('DS_FileShare_properties_typeProperties_folderPath')]"
-					},
-					"DS_FileShare_FileName_properties_typeProperties_fileName": {
-						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_fileName')]"
-					},
-					"DS_FileShare_FileName_properties_typeProperties_folderPath": {
-						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_folderPath')]"
+					"LS_File_Share_properties_typeProperties_userId": {
+						"value": "[parameters('LS_File_Share_properties_typeProperties_userId')]"
 					}
 				}
 			},
@@ -156,6 +161,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"DS_FileShare_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_FileShare_properties_typeProperties_folderPath')]"
+					},
+					"DS_FileShare_FileName_properties_typeProperties_fileName": {
+						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_fileName')]"
+					},
+					"DS_FileShare_FileName_properties_typeProperties_folderPath": {
+						"value": "[parameters('DS_FileShare_FileName_properties_typeProperties_folderPath')]"
 					}
 				}
 			},

@@ -1,0 +1,860 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "adfdxc1134"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL_FINAL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetCurrentDateTime",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "EachFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[SAP_Update_LZ_RunTime]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastProcessedDateTime",
+						"type": "Lookup",
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LZRunTime-21 LastModifiedDateTime from SAP_LZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "GetSAPFiles",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "GetLastProcessedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "EachFiles",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetSAPFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetSAPFiles').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "ExecutePipeline1",
+									"type": "ExecutePipeline",
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "SAP_FS_LZ_PL_FINAL2",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"TRANS_NO": {
+												"value": "@split(item().name, '_')[1] ",
+												"type": "Expression"
+											},
+											"FromDateTime": {
+												"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+												"type": "Expression"
+											},
+											"ToDateTime": {
+												"value": "@variables('V_CurrentDateTime')",
+												"type": "Expression"
+											},
+											"PLANT_NO": {
+												"value": "@split(item().name, '_')[3]",
+												"type": "Expression"
+											},
+											"FileName": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					},
+					"V_PlantNo": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SAP_FS_LZ_PL_FINAL2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL_FINAL2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachFile",
+						"type": "Lookup",
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT \nTRANS_NO, \nPLANT_NO, \nFOLDER_PATH\n FROM \nSAP_FOLDER_MAPPING\nWHERE \nTRANS_NO = '@{pipeline().parameters.TRANS_NO}' AND \nPLANT_NO = '@{pipeline().parameters.PLANT_NO}'",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachFilePath",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ForEachFile",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ForEachFile').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CopyFilesFromFStoLZ",
+									"type": "Copy",
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSetting"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSetting",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.FromDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.ToDateTime",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', item().FOLDER_PATH, '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"TRANS_NO": {
+						"type": "string"
+					},
+					"FromDateTime": {
+						"type": "string"
+					},
+					"ToDateTime": {
+						"type": "string"
+					},
+					"PLANT_NO": {
+						"type": "string"
+					},
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				}
+			}
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Stored Procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Copy Data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[DELETERECORDS]",
+							"storedProcedureParameters": {
+								"COLUMN_NAME": {
+									"value": {
+										"value": "@pipeline().parameters.COLUMN_NAME",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"DATE_VALUE": {
+									"value": {
+										"value": "@pipeline().parameters.DATE_VALUE",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Table_Name": {
+									"value": {
+										"value": "@pipeline().parameters.TABLE_NAME",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Copy Data1",
+						"type": "Copy",
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT  * FROM @{pipeline().parameters.TABLE_NAME} WHERE @{pipeline().parameters.COLUMN_NAME} >= '@{pipeline().parameters.DATE_VALUE}'",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "AzureDataLakeStoreSink"
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference"
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_File_Name",
+								"type": "DatasetReference",
+								"parameters": {
+									"File_Name": {
+										"value": "@concat('Deleted_Records_', pipeline().parameters.DATE_VALUE)",
+										"type": "Expression"
+									},
+									"File_Path": {
+										"value": "@concat(pipeline().parameters.TABLE_NAME, '_', pipeline().parameters.DATE_VALUE)",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"parameters": {
+					"TABLE_NAME": {
+						"type": "string",
+						"defaultValue": "Date_TEST_TBD"
+					},
+					"DATE_VALUE": {
+						"type": "string",
+						"defaultValue": "2019-05-20"
+					},
+					"COLUMN_NAME": {
+						"type": "string",
+						"defaultValue": "AuditDate"
+					}
+				},
+				"folder": {
+					"name": "PT R&D"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_File_Name')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_File_Name')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"File_Name": {
+						"type": "string"
+					},
+					"File_Path": {
+						"type": "string"
+					}
+				},
+				"type": "AzureDataLakeStoreFile",
+				"typeProperties": {
+					"format": {
+						"type": "TextFormat",
+						"columnDelimiter": "|",
+						"rowDelimiter": "",
+						"treatEmptyAsNull": true,
+						"skipLineCount": 0,
+						"firstRowAsHeader": false
+					},
+					"fileName": {
+						"value": "@dataset().File_Name",
+						"type": "Expression"
+					},
+					"folderPath": {
+						"value": "@dataset().File_Path",
+						"type": "Expression"
+					}
+				}
+			}
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Load_Multiple_Tables_To_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get_All_Files_From_Source_Table",
+						"type": "Lookup",
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT TABLE_NAME, LAST_UPDATED_COLUMN FROM  RD.SOURCE_TABLE_INFO WHERE IS_ACTIVE = 1"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Iterate_For_Each_Source_Table",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get_All_Files_From_Source_Table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get_All_Files_From_Source_Table').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get_Min_Max_Dates",
+									"type": "Lookup",
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "select  MIN(@{item().LAST_UPDATED_COLUMN}) MIN_DATE, MAX(@{item().LAST_UPDATED_COLUMN})  MAX_DATE from @{item().TABLE_NAME}",
+												"type": "Expression"
+											}
+										},
+										"dataset": {
+											"referenceName": "DS_SQL_DXC",
+											"type": "DatasetReference"
+										},
+										"firstRowOnly": true
+									}
+								},
+								{
+									"name": "Get_Table_Name_From_Updates",
+									"type": "Lookup",
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "select Count(TABLE_NAME) TABLE_NAME from RD.LAST_UPDATES_INFO  WHERE  TABLE_NAME = '@{item().TABLE_NAME}' ",
+												"type": "Expression"
+											}
+										},
+										"dataset": {
+											"referenceName": "DS_SQL_DXC",
+											"type": "DatasetReference"
+										}
+									}
+								},
+								{
+									"name": "Check_For_File_In_Update",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get_Table_Name_From_Updates",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										},
+										{
+											"activity": "Get_Min_Max_Dates",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(activity('Get_Table_Name_From_Updates').output.firstRow.TABLE_NAME , 0)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Insert_New_Tabels",
+												"type": "SqlServerStoredProcedure",
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"typeProperties": {
+													"storedProcedureName": "[[rd].[SP_INS_LAST_UPDATES_INFO]",
+													"storedProcedureParameters": {
+														"AUDIT_DTTM": {
+															"value": {
+																"value": "@activity('Get_Min_Max_Dates').output.firstRow.MIN_DATE",
+																"type": "Expression"
+															},
+															"type": "String"
+														},
+														"TABLE_NAME": {
+															"value": {
+																"value": "@item().TABLE_NAME",
+																"type": "Expression"
+															},
+															"type": "String"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "LS_ASQL_DXC",
+													"type": "LinkedServiceReference"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "Get_Count_Between_Min_Max",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Get_Last_Modified_Date",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT COUNT(*) RCOUNT FROM @{item().TABLE_NAME} WHERE \n\n@{item().LAST_UPDATED_COLUMN} > '@{activity('Get_Last_Modified_Date').output.firstRow.AUDIT_DTTM}' AND @{item().LAST_UPDATED_COLUMN}  <= '@{activity('Get_Min_Max_Dates').output.firstRow.MAX_DATE}'",
+												"type": "Expression"
+											}
+										},
+										"dataset": {
+											"referenceName": "DS_SQL_DXC",
+											"type": "DatasetReference"
+										}
+									}
+								},
+								{
+									"name": "Check_For_New_Records",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get_Count_Between_Min_Max",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"typeProperties": {
+										"expression": {
+											"value": "@greater(activity('Get_Count_Between_Min_Max').output.firstRow.RCOUNT, 0)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Move_Records",
+												"type": "Copy",
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"sqlReaderQuery": {
+															"value": "SELECT * FROM @{item().TABLE_NAME} WHERE \n@{item().LAST_UPDATED_COLUMN} > '@{activity('Get_Last_Modified_Date').output.firstRow.AUDIT_DTTM}' AND @{item().LAST_UPDATED_COLUMN}  <= '@{activity('Get_Min_Max_Dates').output.firstRow.MAX_DATE}'",
+															"type": "Expression"
+														}
+													},
+													"sink": {
+														"type": "DelimitedTextSink",
+														"storeSettings": {
+															"type": "AzureDataLakeStoreWriteSetting"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextWriteSetting",
+															"quoteAllText": true,
+															"fileExtension": ".txt"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_SQL_DXC",
+														"type": "DatasetReference"
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_File_Name",
+														"type": "DatasetReference",
+														"parameters": {
+															"File_Name": {
+																"value": "@concat(item().TABLE_NAME, '_', addhours(utcnow(), -1, 'dd'), '_' , addhours(utcnow(), -1, 'MM'), '_' , addhours(utcnow(), -1, 'yyyy'), '_', addhours(utcnow(), -1, 'HH'), '_' , addhours(utcnow(), -1, 'mm'), '_' , addhours(utcnow(), -1, 'ss') )",
+																"type": "Expression"
+															},
+															"File_Path": {
+																"value": "@concat('Tables_Date', '\\', item().TABLE_NAME)",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Update_Last_Modify_Date",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [
+													{
+														"activity": "Move_Records",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"typeProperties": {
+													"storedProcedureName": "[[rd].[SP_LAST_UPDATES_INFO]",
+													"storedProcedureParameters": {
+														"AUDIT_DTTM": {
+															"value": {
+																"value": "@{activity('Get_Min_Max_Dates').output.firstRow.MAX_DATE}",
+																"type": "Expression"
+															},
+															"type": "DateTime"
+														},
+														"TABLE_NAME": {
+															"value": {
+																"value": "@item().TABLE_NAME",
+																"type": "Expression"
+															},
+															"type": "String"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "LS_ASQL_DXC",
+													"type": "LinkedServiceReference"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "Get_Last_Modified_Date",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Check_For_File_In_Update",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "SELECT AUDIT_DTTM FROM RD.LAST_UPDATES_INFO WHERE TABLE_NAME = '@{item().TABLE_NAME}'",
+												"type": "Expression"
+											}
+										},
+										"dataset": {
+											"referenceName": "DS_SQL_DXC",
+											"type": "DatasetReference"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"folder": {
+					"name": "R&D"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_File_Name')]"
+			]
+		}
+	]
+}
