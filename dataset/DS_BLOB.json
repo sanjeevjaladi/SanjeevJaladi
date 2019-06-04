@@ -1,0 +1,28 @@
+{
+	"name": "DS_BLOB",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_BLOB",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"File_Name": {
+				"type": "string"
+			},
+			"File_Path": {
+				"type": "string"
+			}
+		},
+		"type": "AzureBlob",
+		"typeProperties": {
+			"fileName": {
+				"value": "@dataset().File_Name",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().File_Path",
+				"type": "Expression"
+			}
+		}
+	}
+}
