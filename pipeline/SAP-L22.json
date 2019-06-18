@@ -1,0 +1,124 @@
+{
+	"name": "SAP-L22",
+	"properties": {
+		"activities": [
+			{
+				"name": "Check_For_ACK_File",
+				"type": "Until",
+				"typeProperties": {
+					"expression": {
+						"value": "@activity('Check_For_File_Exist').output.Exists",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Check_For_File_Exist",
+							"type": "GetMetadata",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_File_Share_File_Name",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_Name": {
+											"value": "@pipeline().parameters.File_Name",
+											"type": "Expression"
+										},
+										"File_Path": {
+											"value": "@pipeline().parameters.File_Path",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"exists"
+								],
+								"formatSettings": {
+									"type": "DelimitedTextReadSetting"
+								}
+							}
+						},
+						{
+							"name": "No_Files_Waite",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Check_For_File_Exist",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"typeProperties": {
+								"waitTimeInSeconds": 30
+							}
+						}
+					],
+					"timeout": "00.00:01:00"
+				}
+			},
+			{
+				"name": "IfCondition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Check_For_ACK_File",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"typeProperties": {
+					"expression": {
+						"value": "@activity('Check_For_File_Exist').output.Exists",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "No_ACK_File",
+							"type": "Wait",
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Call_Next_Pipeline",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Check_For_ACK_File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"parameters": {
+			"File_Name": {
+				"type": "string",
+				"defaultValue": "SAP_L22_ZPInfo_2019-06.ack"
+			},
+			"File_Path": {
+				"type": "string",
+				"defaultValue": "Source\\Sample_Files"
+			}
+		},
+		"folder": {
+			"name": "SAP-L22"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
