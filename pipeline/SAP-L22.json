@@ -39,6 +39,9 @@
 								"fieldList": [
 									"exists"
 								],
+								"storeSettings": {
+									"type": "FileServerReadSetting"
+								},
 								"formatSettings": {
 									"type": "DelimitedTextReadSetting"
 								}
@@ -113,7 +116,7 @@
 			},
 			"File_Path": {
 				"type": "string",
-				"defaultValue": "Source\\Sample_Files"
+				"defaultValue": "Source\\SAP-L22"
 			}
 		},
 		"folder": {
