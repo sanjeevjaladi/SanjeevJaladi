@@ -116,7 +116,7 @@
 			},
 			"File_Path": {
 				"type": "string",
-				"defaultValue": "Source\\SAP-L22"
+				"defaultValue": "Source/SAP-L22"
 			}
 		},
 		"folder": {
