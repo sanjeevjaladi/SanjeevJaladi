@@ -7,12 +7,12 @@
 				"type": "Until",
 				"typeProperties": {
 					"expression": {
-						"value": "@activity('Check_For_File_Exist').output.Exists",
+						"value": "@activity('Get_ACK_File_Name').output.Exists",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Check_For_File_Exist",
+							"name": "Get_ACK_File_Name",
 							"type": "GetMetadata",
 							"policy": {
 								"timeout": "7.00:00:00",
@@ -48,11 +48,11 @@
 							}
 						},
 						{
-							"name": "No_Files_Waite",
+							"name": "No_Files_Wait",
 							"type": "Wait",
 							"dependsOn": [
 								{
-									"activity": "Check_For_File_Exist",
+									"activity": "Get_ACK_File_Name",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -79,7 +79,7 @@
 				],
 				"typeProperties": {
 					"expression": {
-						"value": "@activity('Check_For_File_Exist').output.Exists",
+						"value": "@activity('Get_ACK_File_Name').output.Exists",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
