@@ -213,7 +213,7 @@
 							"type": "IfCondition",
 							"typeProperties": {
 								"expression": {
-									"value": "@equals(item().name, concat('SAP_L22_ZPInfo_', addhours(utcnow(), -1, 'yyyy') , '-' , addhours(utcnow(), -1, 'MM'), '.csv.gz'))",
+									"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' , addhours(utcnow(), -0, 'MM'), '.csv.gz')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' , addhours(utcnow(), -0, 'MM'), '.csv.gz'))\n)",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
