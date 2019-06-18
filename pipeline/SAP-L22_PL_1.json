@@ -1,5 +1,5 @@
 {
-	"name": "SAP-L22",
+	"name": "SAP-L22_PL_1",
 	"properties": {
 		"activities": [
 			{
@@ -94,8 +94,8 @@
 				}
 			},
 			{
-				"name": "Call_Next_Pipeline",
-				"type": "Wait",
+				"name": "Get_Current_TimeStamp",
+				"type": "SetVariable",
 				"dependsOn": [
 					{
 						"activity": "Check_For_ACK_File",
@@ -105,7 +105,190 @@
 					}
 				],
 				"typeProperties": {
-					"waitTimeInSeconds": 1
+					"variableName": "V_CurrentDateTime",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get_Last_Processed_TimeStamp",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Check_For_ACK_File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select LZRunTime LastModifiedDateTime from SAP_LZ_Runtime"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_DXC",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Get_Source_File_Names",
+				"description": "",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Get_Current_TimeStamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get_Last_Processed_TimeStamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "@pipeline().parameters.File_Path",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "Iterate_For_Each_FIle",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get_Source_File_Names",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_Source_File_Names').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Check_For_File_Names",
+							"type": "IfCondition",
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(item().name, concat('SAP_L22_ZPInfo_', addhours(utcnow(), -1, 'yyyy') , '-' , addhours(utcnow(), -1, 'MM'), '.csv.gz'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Execute_PL_SAP-L22_PL_2",
+										"type": "ExecutePipeline",
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "SAP_FS_LZ_PL_FINAL2",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"TRANS_NO": {
+													"value": "@split(item().name, '_')[1] ",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@variables('V_CurrentDateTime')",
+													"type": "Expression"
+												},
+												"PLANT_NO": {
+													"value": "@split(item().name, '_')[3]",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Store_Current_TimeStamp",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Iterate_For_Each_FIle",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[SAP_Update_LZ_RunTime]",
+					"storedProcedureParameters": {
+						"LastModifiedtime": {
+							"value": {
+								"value": "@variables('V_CurrentDateTime')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
@@ -117,6 +300,11 @@
 			"File_Path": {
 				"type": "string",
 				"defaultValue": "Source/SAP-L22"
+			}
+		},
+		"variables": {
+			"V_CurrentDateTime": {
+				"type": "String"
 			}
 		},
 		"folder": {
