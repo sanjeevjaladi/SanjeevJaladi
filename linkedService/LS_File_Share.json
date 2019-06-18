@@ -6,7 +6,7 @@
 		"typeProperties": {
 			"host": "C:\\File_Share",
 			"userId": "sjaladi3@dxc.com",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiY2ZiYjM0MS01MTRhLTRhM2ItYjJhOC1mZDcwOTNmZTVmNmUiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIxMGQxNDYxYS1iYmI4LTRkODUtYTg3OS1hN2I4Yzg4NGNhMmQiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "FileShare",
