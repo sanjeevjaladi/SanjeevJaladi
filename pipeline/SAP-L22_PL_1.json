@@ -176,7 +176,7 @@
 								"type": "Expression"
 							},
 							"FromDateTime": {
-								"value": "@activity('Get_Last_Processed_TimeStamp').output.LastModifiedDateTime",
+								"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
 								"type": "Expression"
 							},
 							"ToDateTime": {
