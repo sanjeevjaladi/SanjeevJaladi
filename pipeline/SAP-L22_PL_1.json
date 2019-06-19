@@ -133,7 +133,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select LZRunTime LastModifiedDateTime from SAP_LZ_Runtime"
+						"sqlReaderQuery": "select LZRunTime-1 LastModifiedDateTime from SAP_LZ_Runtime"
 					},
 					"dataset": {
 						"referenceName": "DS_SQL_DXC",
@@ -228,7 +228,7 @@
 											"waitOnCompletion": true,
 											"parameters": {
 												"FromDateTime": {
-													"value": "@activity('Get_Last_Processed_TimeStamp').output.LastModifiedDateTime",
+													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
 													"type": "Expression"
 												},
 												"ToDateTime": {
