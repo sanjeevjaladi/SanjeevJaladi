@@ -59,7 +59,7 @@
 								}
 							],
 							"typeProperties": {
-								"waitTimeInSeconds": 30
+								"waitTimeInSeconds": 1
 							}
 						}
 					],
@@ -213,7 +213,7 @@
 							"type": "IfCondition",
 							"typeProperties": {
 								"expression": {
-									"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' , addhours(utcnow(), -0, 'MM'), '.csv.gz')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' , addhours(utcnow(), -0, 'MM'), '.csv.gz'))\n)",
+									"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' , addhours(utcnow(), -0, 'MM'), '.csv.gz')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy') , '-' ,adddays(utcnow(),  mul(int(addhours(utcnow(), -0, 'dd')),-1), 'MM'), '.csv.gz'))\n)",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
