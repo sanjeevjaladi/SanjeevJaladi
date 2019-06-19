@@ -227,10 +227,6 @@
 											},
 											"waitOnCompletion": true,
 											"parameters": {
-												"TRANS_NO": {
-													"value": "@split(item().name, '_')[1] ",
-													"type": "Expression"
-												},
 												"FromDateTime": {
 													"value": "@activity('Get_Last_Processed_TimeStamp').output.LastModifiedDateTime",
 													"type": "Expression"
@@ -239,12 +235,12 @@
 													"value": "@variables('V_CurrentDateTime')",
 													"type": "Expression"
 												},
-												"PLANT_NO": {
-													"value": "@split(item().name, '_')[3]",
-													"type": "Expression"
-												},
 												"FileName": {
 													"value": "@item().name",
+													"type": "Expression"
+												},
+												"FilePath": {
+													"value": "@pipeline().parameters.File_Path",
 													"type": "Expression"
 												}
 											}
