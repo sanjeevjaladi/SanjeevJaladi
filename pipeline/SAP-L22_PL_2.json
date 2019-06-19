@@ -1,6 +1,104 @@
 {
 	"name": "SAP-L22_PL_2",
 	"properties": {
+		"activities": [
+			{
+				"name": "Iterate_For_Each_File",
+				"type": "ForEach",
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.FileName",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy_From_File_Share_To_LZ",
+							"type": "Copy",
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"typeProperties": {
+								"source": {
+									"type": "FileSystemSource",
+									"recursive": true
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureDataLakeStoreWriteSetting"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSetting",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_FileShare_FileName",
+									"type": "DatasetReference",
+									"parameters": {
+										"FilePath": {
+											"value": "@pipeline().parameters.FilePath",
+											"type": "Expression"
+										},
+										"FromDateTime": {
+											"value": "@pipeline().parameters.FromDateTime",
+											"type": "Expression"
+										},
+										"ToDateTime": {
+											"value": "@pipeline().parameters.ToDateTime",
+											"type": "Expression"
+										},
+										"FileNames": {
+											"value": "@pipeline().parameters.FILENAME",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS_FileName",
+									"type": "DatasetReference",
+									"parameters": {
+										"FilePath": {
+											"value": "@concat('Daimler/SAP/SAP-L22/', addhours(utcnow(), -0, 'yyyy'), '/', addhours(utcnow(), -0, 'MM'), '/', addhours(utcnow(), -0, 'dd'))",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@pipeline().parameters.FILENAME",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"FromDateTime": {
+				"type": "string"
+			},
+			"ToDateTime": {
+				"type": "string"
+			},
+			"FileName": {
+				"type": "string"
+			},
+			"FilePath": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "SAP-L22"
 		}
