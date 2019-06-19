@@ -218,33 +218,73 @@
 								},
 								"ifTrueActivities": [
 									{
-										"name": "Execute_PL_SAP-L22_PL_2",
-										"type": "ExecutePipeline",
+										"name": "Copy1",
+										"type": "Copy",
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
 										"typeProperties": {
-											"pipeline": {
-												"referenceName": "SAP-L22_PL_2",
-												"type": "PipelineReference"
+											"source": {
+												"type": "FileSystemSource",
+												"recursive": true
 											},
-											"waitOnCompletion": true,
-											"parameters": {
-												"FromDateTime": {
-													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
-													"type": "Expression"
+											"sink": {
+												"type": "DelimitedTextSink",
+												"storeSettings": {
+													"type": "AzureDataLakeStoreWriteSetting"
 												},
-												"ToDateTime": {
-													"value": "@variables('V_CurrentDateTime')",
-													"type": "Expression"
-												},
-												"FileName": {
-													"value": "@item().name",
-													"type": "Expression"
-												},
-												"FilePath": {
-													"value": "@pipeline().parameters.File_Path",
-													"type": "Expression"
+												"formatSettings": {
+													"type": "DelimitedTextWriteSetting",
+													"quoteAllText": true,
+													"fileExtension": ".txt"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "DS_FileShare_FileName",
+												"type": "DatasetReference",
+												"parameters": {
+													"FilePath": {
+														"value": "@pipeline().parameters.File_Path",
+														"type": "Expression"
+													},
+													"FromDateTime": {
+														"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+														"type": "Expression"
+													},
+													"ToDateTime": {
+														"value": "@variables('V_CurrentDateTime')",
+														"type": "Expression"
+													},
+													"FileNames": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
 												}
 											}
-										}
+										],
+										"outputs": [
+											{
+												"referenceName": "DS_ADLS_FileName",
+												"type": "DatasetReference",
+												"parameters": {
+													"FilePath": {
+														"value": "@concat('Daimler/SAP/SAP-L22/', addhours(utcnow(), -0, 'yyyy'), '/', addhours(utcnow(), -0, 'MM'), '/', addhours(utcnow(), -0, 'dd'))",
+														"type": "Expression"
+													},
+													"FileName": {
+														"value": "@item().name",
+														"type": "Expression"
+													}
+												}
+											}
+										]
 									}
 								]
 							}
