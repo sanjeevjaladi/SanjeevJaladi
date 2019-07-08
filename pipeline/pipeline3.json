@@ -1,0 +1,81 @@
+{
+	"name": "pipeline3",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Get_ACK_File_Name').output.childItems, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy'), '-', addhours(utcnow(), -0, 'MM'), '-', addhours(utcnow(), -0, 'dd'), '.ack'))\n",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get_ACK_File_Name",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_FileShare",
+									"type": "DatasetReference",
+									"parameters": {
+										"Path": {
+											"value": "@pipeline().parameters.Source_Files_Path",
+											"type": "Expression"
+										},
+										"FromDateTime": {
+											"value": "@adddays(utcnow(), -1)",
+											"type": "Expression"
+										},
+										"ToDateTime": {
+											"value": "@adddays(utcnow(), 0)",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								]
+							}
+						},
+						{
+							"name": "Wait1",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Get_ACK_File_Name",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					],
+					"timeout": "00.00:01:00"
+				}
+			}
+		],
+		"parameters": {
+			"Source_Files_Path": {
+				"type": "string",
+				"defaultValue": "C:\\File_Share\\Source\\SAP-L22"
+			}
+		},
+		"annotations": []
+	}
+}
