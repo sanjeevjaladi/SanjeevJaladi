@@ -48,25 +48,41 @@
 									"childItems"
 								]
 							}
-						},
-						{
-							"name": "Wait1",
-							"type": "Wait",
-							"dependsOn": [
-								{
-									"activity": "Get_ACK_File_Name",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"waitTimeInSeconds": 1
-							}
 						}
 					],
 					"timeout": "00.00:01:00"
+				}
+			},
+			{
+				"name": "Wait_TRUE",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "Wait_TIME_OUT",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
 				}
 			}
 		],
