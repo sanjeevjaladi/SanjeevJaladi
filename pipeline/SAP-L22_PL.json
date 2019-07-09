@@ -206,7 +206,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', substring(item().name, sub(length(item().name), 17), 10), '.csv.gz')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_meldekz_', substring(item().name, sub(length(item().name), 17), 10), '.csv.gz'))\n)",
+									"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', substring(item().name, sub(length(item().name), 18), 10), '.csv.zip')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_meldekz_', substring(item().name, sub(length(item().name), 18), 10), '.csv.zip'))\n)",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -270,7 +270,7 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"FilePath": {
-														"value": "@concat('Daimler/SAP/SAP-L22/', replace(substring(item().name, sub(length(item().name), 17), 10), '-', '/'),'/')",
+														"value": "@concat('Daimler/SAP/SAP-L22/', replace(substring(item().name, sub(length(item().name), 18), 10), '-', '/'),'/')",
 														"type": "Expression"
 													},
 													"FileName": {
