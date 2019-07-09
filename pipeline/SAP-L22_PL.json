@@ -144,7 +144,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select LastRunTime LastModifiedDateTime from LastRunTimeStmp"
+						"sqlReaderQuery": "select LastRunTime LastModifiedDateTime from LastRunTimeStmp WHERE SourceName = 'SAP-L22' "
 					},
 					"dataset": {
 						"referenceName": "DS_SQL_DXC",
