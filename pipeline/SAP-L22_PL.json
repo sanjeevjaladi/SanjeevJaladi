@@ -270,7 +270,7 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"FilePath": {
-														"value": "@concat('Daimler/SAP/SAP-L22/', replace(substring(item().name, sub(length(item().name), 18), 10), '-', '/'),'/')",
+														"value": "@concat('Daimler/SAP/SAP-L22/', replace(substring(item().name, sub(length(item().name), 17), 10), '-', '/'),'/')",
 														"type": "Expression"
 													},
 													"FileName": {
