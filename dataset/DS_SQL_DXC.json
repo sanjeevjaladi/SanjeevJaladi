@@ -5,6 +5,7 @@
 			"referenceName": "LS_ASQL_DXC",
 			"type": "LinkedServiceReference"
 		},
+		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": []
 	}
