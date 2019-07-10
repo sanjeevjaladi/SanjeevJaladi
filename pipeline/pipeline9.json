@@ -101,7 +101,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Filter1').output",
+						"value": "@activity('Filter1').output.value",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -168,7 +168,7 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@and(and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack')), equals(item().name, 29))",
+						"value": "@and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack'))",
 						"type": "Expression"
 					}
 				}
