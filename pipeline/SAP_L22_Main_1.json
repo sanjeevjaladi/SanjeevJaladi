@@ -127,7 +127,7 @@
 										"type": "Expression"
 									},
 									"ACK_File_Date": {
-										"value": "@substring(item().name, sub(length(item().name), 18), 10)",
+										"value": "@substring(item().name, sub(length(item().name), 14), 10)",
 										"type": "Expression"
 									},
 									"FIle_Path": {
