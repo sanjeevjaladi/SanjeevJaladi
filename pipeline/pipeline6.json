@@ -123,7 +123,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@equals(int(variables('Inc_Value')), sub(length(variables('ALL_FIles_Names')),-2))",
+									"value": "@equals(int(variables('Item_Count')), length(variables('ALL_FIles_Names')))",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
