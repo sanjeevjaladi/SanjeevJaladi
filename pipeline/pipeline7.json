@@ -19,12 +19,20 @@
 						"referenceName": "DS_FileShare_FileName",
 						"type": "DatasetReference",
 						"parameters": {
+							"FilePath": {
+								"value": "@pipeline().parameters.FIle_Path",
+								"type": "Expression"
+							},
 							"FromDateTime": {
 								"value": "@pipeline().parameters.From_Date",
 								"type": "Expression"
 							},
 							"ToDateTime": {
 								"value": "@pipeline().parameters.To_Date",
+								"type": "Expression"
+							},
+							"FileNames": {
+								"value": "@concat('SAP_L22_ZPInfo_', 'yyy-mm-dd', '.csv.zip')\n\n",
 								"type": "Expression"
 							}
 						}
@@ -41,6 +49,9 @@
 				"type": "string"
 			},
 			"ACK_File_Name": {
+				"type": "string"
+			},
+			"FIle_Path": {
 				"type": "string"
 			}
 		},
