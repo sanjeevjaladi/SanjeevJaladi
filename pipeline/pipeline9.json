@@ -104,50 +104,7 @@
 						"value": "@activity('Filter1').output.value",
 						"type": "Expression"
 					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "IfCondition1",
-							"type": "IfCondition",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"expression": {
-									"value": "@and(and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack')), equals(item().name, 29))",
-									"type": "Expression"
-								},
-								"ifTrueActivities": [
-									{
-										"name": "Execute Pipeline1",
-										"type": "ExecutePipeline",
-										"dependsOn": [],
-										"userProperties": [],
-										"typeProperties": {
-											"pipeline": {
-												"referenceName": "pipeline7",
-												"type": "PipelineReference"
-											},
-											"waitOnCompletion": true,
-											"parameters": {
-												"From_Date": {
-													"value": "@variables('Get_Current_TimeStamp')",
-													"type": "Expression"
-												},
-												"To_Date": {
-													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
-													"type": "Expression"
-												},
-												"ACK_File_Name": {
-													"value": "@item().name",
-													"type": "Expression"
-												}
-											}
-										}
-									}
-								]
-							}
-						}
-					]
+					"isSequential": true
 				}
 			},
 			{
