@@ -16,10 +16,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "DS_FileShare_FileName",
+						"referenceName": "DS_FileShare",
 						"type": "DatasetReference",
 						"parameters": {
-							"FilePath": {
+							"Path": {
 								"value": "@pipeline().parameters.FIle_Path",
 								"type": "Expression"
 							},
@@ -30,14 +30,35 @@
 							"ToDateTime": {
 								"value": "@pipeline().parameters.To_Date",
 								"type": "Expression"
-							},
-							"FileNames": {
-								"value": "@concat('SAP_L22_ZPInfo_', substring(pipeline().parameters.ACK_File_Name, sub(length(pipeline().parameters.ACK_File_Name), 18), 10), '.csv.zip')\n",
-								"type": "Expression"
 							}
 						}
 					},
-					"fieldList": []
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "Filter1",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childitems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@or(equals(item().name, concat('SAP_L22_ZPInfo_',pipeline().parameters.ACK_File_Date)), \nequals(item().name, concat('SAP_L22_ZPInfo_meldekz_',pipeline().parameters.ACK_File_Date)))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -48,7 +69,7 @@
 			"To_Date": {
 				"type": "string"
 			},
-			"ACK_File_Name": {
+			"ACK_File_Date": {
 				"type": "string"
 			},
 			"FIle_Path": {

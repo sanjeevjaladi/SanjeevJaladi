@@ -126,8 +126,8 @@
 										"value": "@variables('Get_Current_TimeStamp')",
 										"type": "Expression"
 									},
-									"ACK_File_Name": {
-										"value": "@item().name",
+									"ACK_File_Date": {
+										"value": "substring(item().name, sub(length(item().name), 18), 10)",
 										"type": "Expression"
 									},
 									"FIle_Path": {
