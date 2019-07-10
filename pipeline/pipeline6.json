@@ -144,7 +144,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "File_Len",
-								"value": "string(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name))"
+								"value": {
+									"value": "@string(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name))",
+									"type": "Expression"
+								}
 							}
 						}
 					],
