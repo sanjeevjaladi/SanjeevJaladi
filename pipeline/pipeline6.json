@@ -72,7 +72,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \n          endswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29))",
+						"value": "@and(and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \n          endswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29)) ,\ngreaterOrEquals(length(variables('ALL_FIles_Names')), int(variables('Inc_Value'))))",
 						"type": "Expression"
 					},
 					"activities": [
@@ -105,27 +105,6 @@
 								"variableName": "Inc_Value",
 								"value": {
 									"value": "@variables('Item_Count')",
-									"type": "Expression"
-								}
-							}
-						},
-						{
-							"name": "Set Variable1",
-							"description": "",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "File_Names",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "File_Len",
-								"value": {
-									"value": "@string(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name))",
 									"type": "Expression"
 								}
 							}
