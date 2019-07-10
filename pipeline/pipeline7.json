@@ -82,7 +82,7 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "First_FIle_Name",
+								"variableName": "FIle_Name",
 								"value": {
 									"value": "@variables('All_Files_Names')[int(variables('Inc_Value'))].name",
 									"type": "Expression"
@@ -123,7 +123,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \nendswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29))",
+									"value": "@and(and(startswith(variables('FIle_Name'), 'SAP_L22_ZPInfo_'), endswith(variables('FIle_Name'), '.ack')), equals(length(variables('FIle_Name')), 29))",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -135,7 +135,7 @@
 										"typeProperties": {
 											"variableName": "ACK_File_Names",
 											"value": {
-												"value": "@variables('First_FIle_Name')",
+												"value": "@variables('FIle_Name')",
 												"type": "Expression"
 											}
 										}
@@ -213,7 +213,7 @@
 			"ALL_FIles_Names": {
 				"type": "Array"
 			},
-			"First_FIle_Name": {
+			"FIle_Name": {
 				"type": "String"
 			},
 			"Inc_Value": {
