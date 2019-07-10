@@ -123,7 +123,25 @@
 										"dependsOn": [],
 										"userProperties": [],
 										"typeProperties": {
-											"waitOnCompletion": true
+											"pipeline": {
+												"referenceName": "pipeline7",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"From_Date": {
+													"value": "@variables('Get_Current_TimeStamp')",
+													"type": "Expression"
+												},
+												"To_Date": {
+													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+													"type": "Expression"
+												},
+												"ACK_File_Name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
 										}
 									}
 								]
@@ -134,22 +152,8 @@
 			}
 		],
 		"variables": {
-			"ALL_FIles_Names": {
-				"type": "Array"
-			},
 			"FIle_Name": {
 				"type": "String"
-			},
-			"Inc_Value": {
-				"type": "String",
-				"defaultValue": "0"
-			},
-			"Item_Count": {
-				"type": "String",
-				"defaultValue": "0"
-			},
-			"ACK_File_Names": {
-				"type": "Array"
 			},
 			"Get_Current_TimeStamp": {
 				"type": "String"
