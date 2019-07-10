@@ -130,13 +130,13 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "ExecutePipeline1",
+							"name": "SAP_L22_Final_2",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pipeline7",
+									"referenceName": "SAP_L22_Final_2",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true,
