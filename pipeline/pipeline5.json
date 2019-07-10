@@ -22,7 +22,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@activity('Get_ACK_File_Name').output.Exists",
+						"value": "@not(equals(variables('Ack_FIles_Check'), 'ACK_FIle'))",
 						"type": "Expression"
 					},
 					"activities": [
