@@ -168,8 +168,8 @@
 				}
 			},
 			{
-				"name": "Set Variable1",
-				"type": "SetVariable",
+				"name": "If Condition1",
+				"type": "IfCondition",
 				"dependsOn": [
 					{
 						"activity": "Filter1",
@@ -180,11 +180,21 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "ACK_FILES_COUNT",
-					"value": {
-						"value": "@string(length(activity('Filter1').output.value))",
+					"expression": {
+						"value": "@equals(length(activity('Filter1').output.value), 0)",
 						"type": "Expression"
-					}
+					},
+					"ifTrueActivities": [
+						{
+							"name": "NO_ACK_FILES",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
 				}
 			}
 		],
