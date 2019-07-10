@@ -123,25 +123,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@less(int(variables('Inc_Value')), sub(length(variables('ALL_FIles_Names')),-1))",
+									"value": "@equals(int(variables('Inc_Value')), sub(length(variables('ALL_FIles_Names')),-1))",
 									"type": "Expression"
 								},
 								"ifFalseActivities": [
-									{
-										"name": "Inc_Value_Set_0",
-										"type": "SetVariable",
-										"dependsOn": [],
-										"userProperties": [],
-										"typeProperties": {
-											"variableName": "Inc_Value",
-											"value": {
-												"value": "0",
-												"type": "Expression"
-											}
-										}
-									}
-								],
-								"ifTrueActivities": [
 									{
 										"name": "Counter",
 										"type": "SetVariable",
@@ -151,6 +136,21 @@
 											"variableName": "Inc_Value",
 											"value": {
 												"value": "@variables('Item_Count')",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Inc_Value_Set_0",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "Inc_Value",
+											"value": {
+												"value": "0",
 												"type": "Expression"
 											}
 										}
