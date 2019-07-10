@@ -33,7 +33,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"Path": {
-								"value": "Source\\SAP-L22",
+								"value": "@pipeline().parameters.File_Path",
 								"type": "Expression"
 							},
 							"FromDateTime": {
@@ -160,10 +160,13 @@
 				}
 			}
 		],
+		"parameters": {
+			"File_Path": {
+				"type": "string",
+				"defaultValue": "Source\\SAP-L22"
+			}
+		},
 		"variables": {
-			"FIle_Name": {
-				"type": "String"
-			},
 			"Get_Current_TimeStamp": {
 				"type": "String"
 			}
