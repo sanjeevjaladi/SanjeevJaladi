@@ -269,6 +269,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "SAP-L22"
+		},
 		"annotations": []
 	}
 }
