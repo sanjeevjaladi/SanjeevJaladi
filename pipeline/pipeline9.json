@@ -115,7 +115,18 @@
 								"expression": {
 									"value": "@and(and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack')), equals(item().name, 29))",
 									"type": "Expression"
-								}
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Execute Pipeline1",
+										"type": "ExecutePipeline",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"waitOnCompletion": true
+										}
+									}
+								]
 							}
 						}
 					]
