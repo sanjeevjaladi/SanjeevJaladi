@@ -56,7 +56,7 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@or(equals(item().name, concat('SAP_L22_ZPInfo_',pipeline().parameters.ACK_File_Date)), \nequals(item().name, concat('SAP_L22_ZPInfo_meldekz_',pipeline().parameters.ACK_File_Date)))",
+						"value": "@or(equals(item().name, concat('SAP_L22_ZPInfo_',pipeline().parameters.ACK_File_Date, '.csv.zip')), \nequals(item().name, concat('SAP_L22_ZPInfo_meldekz_',pipeline().parameters.ACK_File_Date, '.csv.zip')))",
 						"type": "Expression"
 					}
 				}
