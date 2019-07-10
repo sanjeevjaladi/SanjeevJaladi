@@ -88,63 +88,6 @@
 				}
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "Filter1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Filter1').output.value",
-						"type": "Expression"
-					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "Execute Pipeline1",
-							"type": "ExecutePipeline",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"pipeline": {
-									"referenceName": "pipeline7",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true,
-								"parameters": {
-									"From_Date": {
-										"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
-										"type": "Expression"
-									},
-									"To_Date": {
-										"value": "@variables('Get_Current_TimeStamp')",
-										"type": "Expression"
-									},
-									"ACK_File_Date": {
-										"value": "@substring(item().name, sub(length(item().name), 14), 10)",
-										"type": "Expression"
-									},
-									"FIle_Path": {
-										"value": "@pipeline().parameters.File_Path",
-										"type": "Expression"
-									},
-									"ACK_File_Name": {
-										"value": "@item().name",
-										"type": "Expression"
-									}
-								}
-							}
-						}
-					]
-				}
-			},
-			{
 				"name": "Filter1",
 				"type": "Filter",
 				"dependsOn": [
@@ -165,6 +108,88 @@
 						"value": "@and(and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack')), equals(length(item().name), 29))",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Filter1').output.valueFilteredItemsCount, 0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "ForEach1",
+							"type": "ForEach",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"items": {
+									"value": "@activity('Filter1').output.value",
+									"type": "Expression"
+								},
+								"isSequential": true,
+								"activities": [
+									{
+										"name": "ExecutePipeline1",
+										"type": "ExecutePipeline",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"pipeline": {
+												"referenceName": "pipeline7",
+												"type": "PipelineReference"
+											},
+											"waitOnCompletion": true,
+											"parameters": {
+												"From_Date": {
+													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+													"type": "Expression"
+												},
+												"To_Date": {
+													"value": "@variables('Get_Current_TimeStamp')",
+													"type": "Expression"
+												},
+												"ACK_File_Date": {
+													"value": "@substring(item().name, sub(length(item().name), 14), 10)",
+													"type": "Expression"
+												},
+												"FIle_Path": {
+													"value": "@pipeline().parameters.File_Path",
+													"type": "Expression"
+												},
+												"ACK_File_Name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									}
+								]
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Send_Email_No_ACK_Files",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
 				}
 			}
 		],
