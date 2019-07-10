@@ -1,6 +1,17 @@
 {
 	"name": "pipeline7",
 	"properties": {
+		"parameters": {
+			"From_Date": {
+				"type": "string"
+			},
+			"To_Date": {
+				"type": "string"
+			},
+			"ACK_File_Name": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
