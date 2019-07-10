@@ -166,6 +166,26 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Set Variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ACK_FILES_COUNT",
+					"value": {
+						"value": "@string(length(activity('Filter1').output.value))",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -176,6 +196,9 @@
 		},
 		"variables": {
 			"Get_Current_TimeStamp": {
+				"type": "String"
+			},
+			"ACK_FILES_COUNT": {
 				"type": "String"
 			}
 		},
