@@ -204,6 +204,19 @@
 							"typeProperties": {
 								"waitTimeInSeconds": 1
 							}
+						},
+						{
+							"name": "Append Variable2",
+							"type": "AppendVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "ALL_FIles_Names",
+								"value": {
+									"value": "@length(variables('ACK_File_Names'))",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
