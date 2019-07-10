@@ -154,6 +154,19 @@
 												"type": "Expression"
 											}
 										}
+									},
+									{
+										"name": "Item_Count_Set_0",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "Item_Count",
+											"value": {
+												"value": "0",
+												"type": "Expression"
+											}
+										}
 									}
 								]
 							}
