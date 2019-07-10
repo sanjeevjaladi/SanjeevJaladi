@@ -128,8 +128,8 @@
 								},
 								"ifTrueActivities": [
 									{
-										"name": "Item_Count_Set_0",
-										"type": "SetVariable",
+										"name": "Append Variable1",
+										"type": "AppendVariable",
 										"dependsOn": [],
 										"userProperties": [],
 										"typeProperties": {
