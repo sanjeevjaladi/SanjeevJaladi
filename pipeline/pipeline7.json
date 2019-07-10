@@ -128,8 +128,8 @@
 								},
 								"ifTrueActivities": [
 									{
-										"name": "Append Variable1",
-										"type": "AppendVariable",
+										"name": "Set Variable1",
+										"type": "SetVariable",
 										"dependsOn": [],
 										"userProperties": [],
 										"typeProperties": {
