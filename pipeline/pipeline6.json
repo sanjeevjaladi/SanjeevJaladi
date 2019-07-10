@@ -128,6 +128,24 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Set Variable1",
+							"description": "",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "File_Len",
+								"value": "string(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name))"
+							}
 						}
 					],
 					"timeout": "7.00:00:00"
@@ -148,6 +166,9 @@
 			"Item_Count": {
 				"type": "String",
 				"defaultValue": "1"
+			},
+			"File_Len": {
+				"type": "String"
 			}
 		},
 		"annotations": []
