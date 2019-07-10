@@ -129,6 +129,10 @@
 									"ACK_File_Name": {
 										"value": "@item().name",
 										"type": "Expression"
+									},
+									"FIle_Path": {
+										"value": "@pipeline().parameters.File_Path",
+										"type": "Expression"
 									}
 								}
 							}

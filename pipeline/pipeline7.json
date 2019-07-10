@@ -3,12 +3,33 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Wait1",
-				"type": "Wait",
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 1
+					"dataset": {
+						"referenceName": "DS_FileShare_FileName",
+						"type": "DatasetReference",
+						"parameters": {
+							"FromDateTime": {
+								"value": "@pipeline().parameters.From_Date",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@pipeline().parameters.To_Date",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": []
 				}
 			}
 		],
