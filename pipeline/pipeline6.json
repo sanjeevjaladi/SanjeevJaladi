@@ -72,7 +72,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@and(and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \n          endswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29)) ,\nlessOrEquals(int(variables('Inc_Value')), length(variables('ALL_FIles_Names'))))",
+						"value": "@and(and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \n          endswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29)) ,\nless(int(variables('Inc_Value')), length(variables('ALL_FIles_Names'))))",
 						"type": "Expression"
 					},
 					"activities": [
