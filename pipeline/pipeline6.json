@@ -110,7 +110,7 @@
 							}
 						},
 						{
-							"name": "Set Variable1",
+							"name": "Inc_Counter",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
