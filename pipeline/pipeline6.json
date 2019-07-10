@@ -79,14 +79,7 @@
 						{
 							"name": "File_Names",
 							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Inc_Counter",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "First_FIle_Name",
@@ -140,7 +133,14 @@
 						{
 							"name": "Inc_Counter",
 							"type": "SetVariable",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Counter",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "Item_Count",
