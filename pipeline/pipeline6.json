@@ -72,7 +72,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@and(and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \n          endswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29)) ,\nless(int(variables('Inc_Value')), length(variables('ALL_FIles_Names'))))",
+						"value": "@and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \nendswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29))",
 						"type": "Expression"
 					},
 					"activities": [
@@ -90,31 +90,11 @@
 							}
 						},
 						{
-							"name": "Counter",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "File_Names",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "Inc_Value",
-								"value": {
-									"value": "@variables('Item_Count')",
-									"type": "Expression"
-								}
-							}
-						},
-						{
 							"name": "Inc_Counter",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
-									"activity": "Counter",
+									"activity": "Check_Inc_Value",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -128,9 +108,58 @@
 									"type": "Expression"
 								}
 							}
+						},
+						{
+							"name": "Check_Inc_Value",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@less(int(variables('Inc_Value')), sub(length(variables('ALL_FIles_Names')),-1))",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Counter",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "Inc_Value",
+											"value": {
+												"value": "@variables('Item_Count')",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Inc_Value_Set_0",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "Inc_Value",
+											"value": {
+												"value": "int(0)",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
 						}
 					],
-					"timeout": "0.00:03:00"
+					"timeout": "0.00:01:00"
 				}
 			}
 		],
