@@ -104,7 +104,36 @@
 						"value": "@activity('Filter1').output.value",
 						"type": "Expression"
 					},
-					"isSequential": true
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline7",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"From_Date": {
+										"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"To_Date": {
+										"value": "@variables('Get_Current_TimeStamp')",
+										"type": "Expression"
+									},
+									"ACK_File_Name": {
+										"value": "@item().name",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
 				}
 			},
 			{
