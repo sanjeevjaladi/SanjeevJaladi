@@ -1,0 +1,233 @@
+{
+	"name": "pipeline7",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetMetadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "Source\\SAP-L22",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@adddays(utcnow(), -10)",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "All_Files",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetMetadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ALL_FIles_Names",
+					"value": {
+						"value": "@activity('GetMetadata1').output.childItems",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "All_Files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(int(variables('Item_Count')), length(variables('ALL_FIles_Names')))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "File_Names",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "First_FIle_Name",
+								"value": {
+									"value": "@variables('All_Files_Names')[int(variables('Inc_Value'))].name",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Inc_Counter",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Counter",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "Item_Count",
+								"value": {
+									"value": "@string(add(int(variables('Inc_Value')), 1))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Check_Inc_Value",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \nendswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Item_Count_Set_0",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "ACK_File_Names",
+											"value": {
+												"value": "@variables('First_FIle_Name')",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Counter",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "File_Names",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "Inc_Value",
+								"value": {
+									"value": "@variables('Item_Count')",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "0.00:01:00"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Until1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greaterOrEquals(length(variables('ACK_File_Names')), 1)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "No_ACK_File",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Found_ACK_FIle",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"ALL_FIles_Names": {
+				"type": "Array"
+			},
+			"First_FIle_Name": {
+				"type": "String"
+			},
+			"Inc_Value": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"Item_Count": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"ACK_File_Names": {
+				"type": "Array"
+			}
+		},
+		"annotations": []
+	}
+}
