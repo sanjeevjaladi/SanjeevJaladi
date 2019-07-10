@@ -28,9 +28,25 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"fieldList": [
-						"childItems"
-					]
+					"dataset": {
+						"referenceName": "DS_FileShare",
+						"type": "DatasetReference",
+						"parameters": {
+							"Path": {
+								"value": "@pipeline().parameters.File_Path",
+								"type": "Expression"
+							},
+							"FromDateTime": {
+								"value": "@variables('Get_Current_TimeStamp')",
+								"type": "Expression"
+							},
+							"ToDateTime": {
+								"value": "@activity('Get_Last_Processed_TimeStamp').output.LastModifiedDateTime ",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": []
 				}
 			},
 			{
