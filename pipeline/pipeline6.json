@@ -170,6 +170,26 @@
 									}
 								]
 							}
+						},
+						{
+							"name": "Set Variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check_Inc_Value",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "File_Len",
+								"value": {
+									"value": "@concat(string(length(variables('ALL_FIles_Names'))), variables('Inc_Value'))",
+									"type": "Expression"
+								}
+							}
 						}
 					],
 					"timeout": "0.00:01:00"
