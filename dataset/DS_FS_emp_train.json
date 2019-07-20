@@ -1,0 +1,29 @@
+{
+	"name": "DS_FS_emp_train",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_fs_emp_train",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"File_Path": {
+				"type": "string"
+			},
+			"File_Name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "FileShare",
+		"typeProperties": {
+			"fileName": {
+				"value": "@dataset().File_Path",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().File_Path",
+				"type": "Expression"
+			}
+		}
+	}
+}
