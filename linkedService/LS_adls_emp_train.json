@@ -1,0 +1,14 @@
+{
+	"name": "LS_adls_emp_train",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDataLakeStore",
+		"typeProperties": {
+			"dataLakeStoreUri": "https://adlsdxc1134.azuredatalakestore.net/webhdfs/v1",
+			"tenant": "93f33571-550f-43cf-b09f-cd331338d086",
+			"subscriptionId": "aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7",
+			"resourceGroupName": "RGDXC1134"
+		}
+	}
+}
