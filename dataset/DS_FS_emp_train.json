@@ -17,7 +17,7 @@
 		"type": "FileShare",
 		"typeProperties": {
 			"fileName": {
-				"value": "@dataset().File_Path",
+				"value": "@dataset().File_Name",
 				"type": "Expression"
 			},
 			"folderPath": {
