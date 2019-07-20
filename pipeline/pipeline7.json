@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "PL_Emp_",
+				"name": "PL_Emp_Train",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
