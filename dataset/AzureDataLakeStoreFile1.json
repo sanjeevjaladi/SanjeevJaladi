@@ -1,0 +1,23 @@
+{
+	"name": "AzureDataLakeStoreFile1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_adls_emp_train",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Tar_Path": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDataLakeStoreFile",
+		"typeProperties": {
+			"fileName": "Emp_new_full.csv",
+			"folderPath": {
+				"value": "@dataset().Tar_Path",
+				"type": "Expression"
+			}
+		}
+	}
+}
