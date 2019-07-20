@@ -29,8 +29,14 @@
 						"referenceName": "DS_FS_emp_train",
 						"type": "DatasetReference",
 						"parameters": {
-							"File_Path": "Emp_Date",
-							"File_Name": "Emp.csv"
+							"File_Path": {
+								"value": "@pipeline().parameters.P_Source_Path",
+								"type": "Expression"
+							},
+							"File_Name": {
+								"value": "@pipeline().parameters.P_Source_Name",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -40,7 +46,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"Tar_Path": {
-								"value": "@concat('EmP', '/Empty')",
+								"value": "@pipeline().parameters.P_Trg_Path",
 								"type": "Expression"
 							}
 						}
@@ -48,6 +54,17 @@
 				]
 			}
 		],
+		"parameters": {
+			"P_Source_Path": {
+				"type": "string"
+			},
+			"P_Source_Name": {
+				"type": "string"
+			},
+			"P_Trg_Path": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
