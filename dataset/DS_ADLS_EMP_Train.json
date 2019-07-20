@@ -1,5 +1,5 @@
 {
-	"name": "AzureDataLakeStoreFile1",
+	"name": "DS_ADLS_EMP_Train",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_adls_emp_train",
