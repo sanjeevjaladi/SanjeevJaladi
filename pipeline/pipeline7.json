@@ -1,0 +1,53 @@
+{
+	"name": "pipeline7",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "FileSystemSource",
+						"recursive": true
+					},
+					"sink": {
+						"type": "AzureDataLakeStoreSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_FS_emp_train",
+						"type": "DatasetReference",
+						"parameters": {
+							"File_Path": "Emp_Date",
+							"File_Name": "Emp.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_EMP_Train",
+						"type": "DatasetReference",
+						"parameters": {
+							"Tar_Path": {
+								"value": "@concat('EmP', utcnow())",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
