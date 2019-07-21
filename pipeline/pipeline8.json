@@ -48,43 +48,9 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@and(endswith(item().name, '.csv'), \nequals(substring(item().name, 1, 10), pipeline().parameters.ACK_DATE))",
+						"value": "@and(endswith(item().name, '.csv'), equals(substring(item().name, 1, 10), pipeline().parameters.ACK_DATE))",
 						"type": "Expression"
 					}
-				}
-			},
-			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "Get Metadata1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Get Metadata1').output.values",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "SetVariable1",
-							"type": "SetVariable",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "V_Test_Dte",
-								"value": {
-									"value": "@substring(item().name, 1, 10)",
-									"type": "Expression"
-								}
-							}
-						}
-					]
 				}
 			}
 		],
