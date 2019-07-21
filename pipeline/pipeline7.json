@@ -114,7 +114,7 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"ACK_DATE": {
-										"value": "@substring(item().name, 4,10)",
+										"value": "@item().name",
 										"type": "Expression"
 									}
 								}
