@@ -48,9 +48,87 @@
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@and(endswith(item().name, '.csv'), equals(substring(item().name, 1, 10), pipeline().parameters.ACK_DATE))",
+						"value": "@endswith(item().name, '.csv')",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter1').output.values",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy Data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "FileServerReadSetting",
+										"recursive": true
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSetting"
+									}
+								},
+								"sink": {
+									"type": "AzureDataLakeStoreSink"
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_File_Share_File_Name",
+									"type": "DatasetReference",
+									"parameters": {
+										"File_Name": {
+											"value": "Example",
+											"type": "Expression"
+										},
+										"File_Path": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS",
+									"type": "DatasetReference",
+									"parameters": {
+										"FilePath": {
+											"value": "@concat('Example/', replace(pipeline().parameters.ACK_DATE, '-', '/'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
 				}
 			}
 		],
