@@ -3,8 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "PL_Emp_Train",
-				"type": "Copy",
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -15,56 +15,115 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "FileSystemSource",
-						"recursive": true
-					},
-					"sink": {
-						"type": "AzureDataLakeStoreSink"
-					},
-					"enableStaging": false
-				},
-				"inputs": [
-					{
+					"dataset": {
 						"referenceName": "DS_FS_emp_train",
 						"type": "DatasetReference",
 						"parameters": {
 							"File_Path": {
-								"value": "@pipeline().parameters.P_Source_Path",
-								"type": "Expression"
-							},
-							"File_Name": {
-								"value": "@pipeline().parameters.P_Source_Name",
+								"value": "Example",
 								"type": "Expression"
 							}
 						}
+					},
+					"fieldList": [
+						"childItems"
+					]
+				}
+			},
+			{
+				"name": "Filter1",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
-				"outputs": [
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@endswith(item().name, '.ack')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
 					{
-						"referenceName": "DS_ADLS_EMP_Train",
-						"type": "DatasetReference",
-						"parameters": {
-							"Tar_Path": {
-								"value": "@pipeline().parameters.P_Trg_Path",
-								"type": "Expression"
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(length(activity('Filter1').output.value), 0)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Send_No_ACK_Email",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
 							}
 						}
+					]
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
-				]
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter1').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline8",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ACK_DATE": {
+										"value": "@substring(item().name, 4,10)",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
 			}
 		],
-		"parameters": {
-			"P_Source_Path": {
-				"type": "string"
-			},
-			"P_Source_Name": {
-				"type": "string"
-			},
-			"P_Trg_Path": {
-				"type": "string"
-			}
-		},
 		"annotations": []
 	}
 }
