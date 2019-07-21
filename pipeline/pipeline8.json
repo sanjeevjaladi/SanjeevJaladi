@@ -105,11 +105,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"File_Name": {
-											"value": "Example",
+											"value": "@item().name",
 											"type": "Expression"
 										},
 										"File_Path": {
-											"value": "@item().name",
+											"value": "Example",
 											"type": "Expression"
 										}
 									}
