@@ -52,6 +52,36 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"activities": [
+						{
+							"name": "SetVariable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "V_Test_Dte",
+								"value": {
+									"value": "@substring(item().name, 1, 10)",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
@@ -60,6 +90,11 @@
 			},
 			" ACK_Date_Part": {
 				"type": "string"
+			}
+		},
+		"variables": {
+			"V_Test_Dte": {
+				"type": "String"
 			}
 		},
 		"annotations": []
