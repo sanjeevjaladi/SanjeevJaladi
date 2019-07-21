@@ -100,6 +100,7 @@
 						"value": "@activity('Filter1').output.value",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Execute Pipeline1",
@@ -115,6 +116,10 @@
 								"parameters": {
 									"ACK_DATE": {
 										"value": "@item().name",
+										"type": "Expression"
+									},
+									"ACK_Date_Part": {
+										"value": "@substring(item().name, 4,10)",
 										"type": "Expression"
 									}
 								}
