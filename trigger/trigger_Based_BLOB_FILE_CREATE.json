@@ -1,0 +1,28 @@
+{
+	"name": "trigger_Based_BLOB_FILE_CREATE",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Trigger Test TBD",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"Source_Container": "t7dwsource",
+					"Target_Container": "trigger",
+					"File": "Emp.csv"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/t7dwsource/blobs/",
+			"scope": "/subscriptions/aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7/resourceGroups/RGDXC1134/providers/Microsoft.Storage/storageAccounts/blobdxc1134",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
