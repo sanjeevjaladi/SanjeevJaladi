@@ -1,7 +1,8 @@
 {
 	"name": "SQLTOADLS",
 	"properties": {
-		"runtimeState": "Started",
+		"annotations": [],
+		"runtimeState": "Stopped",
 		"pipelines": [
 			{
 				"pipelineReference": {
