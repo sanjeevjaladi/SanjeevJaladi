@@ -23,6 +23,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LS_BLOB'"
 		},
+		"LS_Train_SQL_DB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_Train_SQL_DB'"
+		},
 		"LS_adls_emp_train_servicePrincipalKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'servicePrincipalKey' of 'LS_adls_emp_train'"
@@ -71,33 +75,9 @@
 			"type": "string",
 			"defaultValue": "@dataset().FilePath"
 		},
-		"DS_ADLS_EMP_Train_properties_typeProperties_fileName": {
-			"type": "string",
-			"defaultValue": "Emp_new_full.csv"
-		},
-		"DS_ADLS_EMP_Train_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().Tar_Path"
-		},
-		"DS_ADLS_File_Name_properties_typeProperties_fileName": {
-			"type": "string",
-			"defaultValue": "@dataset().File_Name"
-		},
-		"DS_ADLS_File_Name_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().File_Path"
-		},
 		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
 			"type": "string",
 			"defaultValue": "@dataset().FilePath"
-		},
-		"DS_BLOB_properties_typeProperties_fileName": {
-			"type": "string",
-			"defaultValue": "@dataset().File_Name"
-		},
-		"DS_BLOB_properties_typeProperties_folderPath": {
-			"type": "string",
-			"defaultValue": "@dataset().File_Path"
 		}
 	},
 	"variables": {
@@ -165,6 +145,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/FileShare')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LS_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -225,6 +225,19 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LS_Train_SQL_DB')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('LS_Train_SQL_DB_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LS_adls_emp_train')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -244,65 +257,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/FileShare')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Cyc_Close')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Cyc_Close",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[ABC].[UPDATE_CYC_END_NEW]",
-							"storedProcedureParameters": {
-								"CYC_SK": {
-									"value": {
-										"value": "@pipeline().parameters.CYC_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "LS_ASQL_ABC",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"CYC_SK": {
-						"type": "Int"
-					}
-				},
-				"folder": {
-					"name": "ABC"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Cyc_Start')]",
@@ -352,6 +306,133 @@
 						"type": "Int"
 					},
 					"FORCE_IND": {
+						"type": "String"
+					},
+					"ABC_SCHEM": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "ABC"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Job_Start')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Job_Start",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[ABC].[UPDATE_JOB_START_NEW]",
+							"storedProcedureParameters": {
+								"JOB_SK": {
+									"value": {
+										"value": "@pipeline().parameters.JOB_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"PL_RUN_ID": {
+									"value": {
+										"value": "@pipeline().parameters.PL_RUN_ID",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"STEP_SK": {
+									"value": {
+										"value": "@pipeline().parameters.STEP_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_ABC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"JOB_SK": {
+						"type": "Int"
+					},
+					"PL_RUN_ID": {
+						"type": "String"
+					},
+					"STEP_SK": {
+						"type": "Int"
+					},
+					"ABC_SCHEM": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "ABC"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Cyc_Close')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Cyc_Close",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[ABC].[UPDATE_CYC_END_NEW]",
+							"storedProcedureParameters": {
+								"CYC_SK": {
+									"value": {
+										"value": "@pipeline().parameters.CYC_SK",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_ABC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"CYC_SK": {
+						"type": "Int"
+					},
+					"ABC_SCHEM": {
 						"type": "String"
 					}
 				},
@@ -488,75 +569,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Job_Start')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Job_Start",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[ABC].[UPDATE_JOB_START_NEW]",
-							"storedProcedureParameters": {
-								"JOB_SK": {
-									"value": {
-										"value": "@pipeline().parameters.JOB_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								},
-								"PL_RUN_ID": {
-									"value": {
-										"value": "@pipeline().parameters.PL_RUN_ID",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
-								"STEP_SK": {
-									"value": {
-										"value": "@pipeline().parameters.STEP_SK",
-										"type": "Expression"
-									},
-									"type": "Int32"
-								}
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "LS_ASQL_ABC",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"parameters": {
-					"JOB_SK": {
-						"type": "Int"
-					},
-					"PL_RUN_ID": {
-						"type": "String"
-					},
-					"STEP_SK": {
-						"type": "Int"
-					}
-				},
-				"folder": {
-					"name": "ABC"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Step_End')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -603,6 +615,9 @@
 						"type": "Int"
 					},
 					"STATUS": {
+						"type": "String"
+					},
+					"ABC_SCHEM": {
 						"type": "String"
 					}
 				},
@@ -663,6 +678,9 @@
 					},
 					"FORCE_IND": {
 						"type": "String"
+					},
+					"ABC_SCHEM": {
+						"type": "String"
 					}
 				},
 				"folder": {
@@ -672,69 +690,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_ADLS')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ADLS",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"FilePath": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "AzureDataLakeStoreFile",
-				"typeProperties": {
-					"format": {
-						"type": "TextFormat",
-						"columnDelimiter": ",",
-						"rowDelimiter": "",
-						"treatEmptyAsNull": true,
-						"skipLineCount": 0,
-						"firstRowAsHeader": false
-					},
-					"folderPath": {
-						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_ADLS_EMP_Train')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_adls_emp_train",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Tar_Path": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "AzureDataLakeStoreFile",
-				"typeProperties": {
-					"fileName": "[parameters('DS_ADLS_EMP_Train_properties_typeProperties_fileName')]",
-					"folderPath": {
-						"value": "[parameters('DS_ADLS_EMP_Train_properties_typeProperties_folderPath')]",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_adls_emp_train')]"
 			]
 		},
 		{
@@ -779,7 +734,25 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_ADLS_File_Name')]",
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_DXC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_DXC",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_DXC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -788,10 +761,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"File_Name": {
-						"type": "string"
-					},
-					"File_Path": {
+					"FilePath": {
 						"type": "string"
 					}
 				},
@@ -800,24 +770,38 @@
 				"typeProperties": {
 					"format": {
 						"type": "TextFormat",
-						"columnDelimiter": "|",
+						"columnDelimiter": ",",
 						"rowDelimiter": "",
 						"treatEmptyAsNull": true,
 						"skipLineCount": 0,
 						"firstRowAsHeader": false
 					},
-					"fileName": {
-						"value": "[parameters('DS_ADLS_File_Name_properties_typeProperties_fileName')]",
-						"type": "Expression"
-					},
 					"folderPath": {
-						"value": "[parameters('DS_ADLS_File_Name_properties_typeProperties_folderPath')]",
+						"value": "[parameters('DS_ADLS_properties_typeProperties_folderPath')]",
 						"type": "Expression"
 					}
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_ABC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ASQL_ABC",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
 			]
 		},
 		{
@@ -867,58 +851,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_BLOB')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_BLOB",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"File_Name": {
-						"type": "string"
-					},
-					"File_Path": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "AzureBlob",
-				"typeProperties": {
-					"fileName": {
-						"value": "[parameters('DS_BLOB_properties_typeProperties_fileName')]",
-						"type": "Expression"
-					},
-					"folderPath": {
-						"value": "[parameters('DS_BLOB_properties_typeProperties_folderPath')]",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_BLOB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_SQL_ABC')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ASQL_ABC",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ASQL_ABC')]"
 			]
 		}
 	]

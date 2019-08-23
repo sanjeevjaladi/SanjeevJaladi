@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "ADFDXC1134"
 		},
+		"LS_File_Share_password": {
+			"value": ""
+		},
 		"LS_ADLS_servicePrincipalKey": {
 			"value": ""
 		},
@@ -17,44 +20,20 @@
 		"LS_BLOB_connectionString": {
 			"value": ""
 		},
+		"LS_Train_CSV_FILE_password": {
+			"value": ""
+		},
+		"LS_Train_SQL_DB_connectionString": {
+			"value": ""
+		},
 		"LS_FS_Tran_EMP_password": {
-			"value": ""
-		},
-		"LS_File_Share_password": {
-			"value": ""
-		},
-		"LS_adls_emp_train_servicePrincipalKey": {
 			"value": ""
 		},
 		"LS_fs_emp_train_password": {
 			"value": ""
 		},
-		"DS_ADLS_properties_typeProperties_folderPath": {
-			"value": "@dataset().FilePath"
-		},
-		"DS_ADLS_EMP_Train_properties_typeProperties_fileName": {
-			"value": "Emp_new_full.csv"
-		},
-		"DS_ADLS_EMP_Train_properties_typeProperties_folderPath": {
-			"value": "@dataset().Tar_Path"
-		},
-		"DS_ADLS_File_Name_properties_typeProperties_fileName": {
-			"value": "@dataset().File_Name"
-		},
-		"DS_ADLS_File_Name_properties_typeProperties_folderPath": {
-			"value": "@dataset().File_Path"
-		},
-		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
-			"value": "@dataset().FilePath"
-		},
-		"DS_BLOB_properties_typeProperties_fileName": {
-			"value": "@dataset().File_Name"
-		},
-		"DS_BLOB_properties_typeProperties_folderPath": {
-			"value": "@dataset().File_Path"
-		},
-		"DS_FS_emp_train_properties_typeProperties_folderPath": {
-			"value": "@dataset().File_Path"
+		"LS_adls_emp_train_servicePrincipalKey": {
+			"value": ""
 		},
 		"DS_FileShare_properties_typeProperties_folderPath": {
 			"value": "@dataset().Path"
@@ -64,6 +43,51 @@
 		},
 		"DS_FileShare_FileName_properties_typeProperties_folderPath": {
 			"value": "@dataset().FilePath"
+		},
+		"DS_ADLS_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
+		},
+		"DS_ADLS_From_To_DateTime_properties_typeProperties_folderPath": {
+			"value": "@dataset().FilePath"
+		},
+		"DS_ADLS_File_Name_properties_typeProperties_fileName": {
+			"value": "@dataset().File_Name"
+		},
+		"DS_ADLS_File_Name_properties_typeProperties_folderPath": {
+			"value": "@dataset().File_Path"
+		},
+		"DS_FS_emp_train_properties_typeProperties_folderPath": {
+			"value": "@dataset().File_Path"
+		},
+		"DS_ADLS_EMP_Train_properties_typeProperties_fileName": {
+			"value": "Emp_new_full.csv"
+		},
+		"DS_ADLS_EMP_Train_properties_typeProperties_folderPath": {
+			"value": "@dataset().Tar_Path"
+		},
+		"DS_BLOB_properties_typeProperties_fileName": {
+			"value": "@dataset().File_Name"
+		},
+		"DS_BLOB_properties_typeProperties_folderPath": {
+			"value": "@dataset().File_Path"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Source_Container": {
+			"value": "t7dwsource"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Target_Container": {
+			"value": "trigger"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_File": {
+			"value": "Emp.csv"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_typeProperties_scope": {
+			"value": "/subscriptions/aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7/resourceGroups/RGDXC1134/providers/Microsoft.Storage/storageAccounts/blobdxc1134"
+		},
+		"LS_File_Share_properties_typeProperties_host": {
+			"value": "C:\\File_Share"
+		},
+		"LS_File_Share_properties_typeProperties_userId": {
+			"value": "sjaladi3@dxc.com"
 		},
 		"LS_ADLS_properties_typeProperties_dataLakeStoreUri": {
 			"value": "https://adlsdxc1134.azuredatalakestore.net/webhdfs/v1"
@@ -80,16 +104,22 @@
 		"LS_ADLS_properties_typeProperties_resourceGroupName": {
 			"value": "RGDXC1134"
 		},
+		"LS_Train_CSV_FILE_properties_typeProperties_host": {
+			"value": "C:\\File_Share\\Trainn\\FirstPL_Files"
+		},
+		"LS_Train_CSV_FILE_properties_typeProperties_userId": {
+			"value": "sjaladi3@dxc.com"
+		},
 		"LS_FS_Tran_EMP_properties_typeProperties_host": {
 			"value": "C:\\File_Share"
 		},
 		"LS_FS_Tran_EMP_properties_typeProperties_userId": {
 			"value": "sjaladi3@dxc.com"
 		},
-		"LS_File_Share_properties_typeProperties_host": {
+		"LS_fs_emp_train_properties_typeProperties_host": {
 			"value": "C:\\File_Share"
 		},
-		"LS_File_Share_properties_typeProperties_userId": {
+		"LS_fs_emp_train_properties_typeProperties_userId": {
 			"value": "sjaladi3@dxc.com"
 		},
 		"LS_adls_emp_train_properties_typeProperties_dataLakeStoreUri": {
@@ -106,24 +136,6 @@
 		},
 		"LS_adls_emp_train_properties_typeProperties_resourceGroupName": {
 			"value": "RGDXC1134"
-		},
-		"LS_fs_emp_train_properties_typeProperties_host": {
-			"value": "C:\\File_Share"
-		},
-		"LS_fs_emp_train_properties_typeProperties_userId": {
-			"value": "sjaladi3@dxc.com"
-		},
-		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Source_Container": {
-			"value": "t7dwsource"
-		},
-		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Target_Container": {
-			"value": "trigger"
-		},
-		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_File": {
-			"value": "Emp.csv"
-		},
-		"trigger_Based_BLOB_FILE_CREATE_properties_typeProperties_scope": {
-			"value": "/subscriptions/aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7/resourceGroups/RGDXC1134/providers/Microsoft.Storage/storageAccounts/blobdxc1134"
 		},
 		"containerUri": {
 			"value": ""
