@@ -2,7 +2,7 @@
 	"name": "trigger_Based_BLOB_FILE_CREATE",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
