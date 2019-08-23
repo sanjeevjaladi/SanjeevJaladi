@@ -1,0 +1,2748 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory Name",
+			"defaultValue": "ADFDXC1134"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Source_Container": {
+			"type": "string",
+			"defaultValue": "t7dwsource"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Target_Container": {
+			"type": "string",
+			"defaultValue": "trigger"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_File": {
+			"type": "string",
+			"defaultValue": "Emp.csv"
+		},
+		"trigger_Based_BLOB_FILE_CREATE_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7/resourceGroups/RGDXC1134/providers/Microsoft.Storage/storageAccounts/blobdxc1134"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetCurrentDateTime",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "EachFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[SAP_Update_LZ_RunTime]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastProcessedDateTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LZRunTime-16 LastModifiedDateTime from SAP_LZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "GetSAPFiles",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "GetLastProcessedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "EachFiles",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetSAPFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetSAPFiles').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "SetVariable1",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "V_PlantNo",
+										"value": {
+											"value": "@if(startswith(split(item().name, '_')[1], 'MOV') , \nconcat(substring(split(item().name, '_')[1], 0 , 3), '_', split(item().name, '_')[2]) , \nconcat(split(item().name, '_')[1], '_', split(item().name, '_')[3])) ",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Copy Data1",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "SetVariable1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@variables('V_CurrentDateTime')",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', variables('V_PlantNo'), '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					},
+					"V_PlantNo": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachFile",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select FILENAME, FILEPATH from SAP_FIles where FILENAME = substring( '@{pipeline().parameters.FILENAME}', 1, len(FILENAME))",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachFilePath",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ForEachFile",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ForEachFile').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CopyFilesFromFStoLZ",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.FromDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.ToDateTime",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', item().FILEPATH, '_010', '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"FILENAME": {
+						"type": "string"
+					},
+					"FromDateTime": {
+						"type": "string"
+					},
+					"ToDateTime": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL_FINAL2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachFile",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT \nTRANS_NO, \nPLANT_NO, \nFOLDER_PATH\n FROM \nSAP_FOLDER_MAPPING\nWHERE \nTRANS_NO = '@{pipeline().parameters.TRANS_NO}' AND \nPLANT_NO = '@{pipeline().parameters.PLANT_NO}'",
+									"type": "Expression"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachFilePath",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ForEachFile",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ForEachFile').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CopyFilesFromFStoLZ",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "SAP",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.FromDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.ToDateTime",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/Landing/', item().FOLDER_PATH, '/', addhours(utcnow(), -1, 'yyyy'), '/', addhours(utcnow(), -1, 'MM'), '/', addhours(utcnow(), -1, 'dd'))",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@pipeline().parameters.FILENAME",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"TRANS_NO": {
+						"type": "string"
+					},
+					"FromDateTime": {
+						"type": "string"
+					},
+					"ToDateTime": {
+						"type": "string"
+					},
+					"PLANT_NO": {
+						"type": "string"
+					},
+					"FileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_L22_Final_2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "@pipeline().parameters.FIle_Path",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@pipeline().parameters.From_Date",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@pipeline().parameters.To_Date",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Filter1",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childitems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@or(equals(item().name, concat('SAP_L22_ZPInfo_',pipeline().parameters.ACK_File_Date, '.csv.zip')), \nequals(item().name, concat('SAP_L22_ZPInfo_meldekz_',pipeline().parameters.ACK_File_Date, '.csv.zip')))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Filter1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "Copy1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "FileSystemSource",
+											"recursive": true
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureDataLakeStoreWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_FileShare_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@pipeline().parameters.File_Path",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@pipeline().parameters.From_Date",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@pipeline().parameters.To_Date",
+													"type": "Expression"
+												},
+												"FileNames": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS_FileName",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Daimler/SAP/SAP-L22/', replace(pipeline().parameters.ACK_File_Date, '-', '/'),'/')",
+													"type": "Expression"
+												},
+												"FileName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"From_Date": {
+						"type": "string"
+					},
+					"To_Date": {
+						"type": "string"
+					},
+					"ACK_File_Date": {
+						"type": "string"
+					},
+					"FIle_Path": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "SAP-L22"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_LZ_DZ_PL1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachFolder",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetFolderNames",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetLastModifiedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetFolderNames').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "ExecuteSAP_FS_DZ_PL2",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "SAP_LZ_DZ_PL2",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"FILEPATH": {
+												"value": "@item().FILEPATH",
+												"type": "Expression"
+											},
+											"CurrentDateTime": {
+												"value": "@variables('V_CurrentDateTime')",
+												"type": "Expression"
+											},
+											"LastModifiedDateTime": {
+												"value": "@activity('GetLastModifiedDateTime').output.firstRow.LastModifiedDateTime",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "GetFolderNames",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select FILENAME, FILEPATH from SAP_FIles "
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetCurrentDateTime",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ForEachFolder",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[SAP_Update_DZ_RunTime]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastModifiedDateTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select DZRunTime-6 LastModifiedDateTime from SAP_DZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": "GetDatesFromFolder",
+									"FromDateTime": {
+										"value": "@adddays(utcnow(), -1)",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@adddays(utcnow(), 1)",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Set Variable1",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "V_GetDate",
+										"value": {
+											"value": "@substring(item().name, sub(length(item().name), 15), 8)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"V_GetDate": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "PT R&D"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline3')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(activity('Get_ACK_File_Name').output.childItems, \nconcat('SAP_L22_ZPInfo_', addhours(utcnow(), -0, 'yyyy'), '-', addhours(utcnow(), -0, 'MM'), '-', addhours(utcnow(), -0, 'dd'), '.ack'))\n",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Get_ACK_File_Name",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "DS_FileShare",
+											"type": "DatasetReference",
+											"parameters": {
+												"Path": {
+													"value": "@pipeline().parameters.Source_Files_Path",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@adddays(utcnow(), -1)",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@adddays(utcnow(), 0)",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"childItems"
+										]
+									}
+								}
+							],
+							"timeout": "00.00:01:00"
+						}
+					},
+					{
+						"name": "Wait_TRUE",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					},
+					{
+						"name": "Wait_TIME_OUT",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "Until1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"parameters": {
+					"Source_Files_Path": {
+						"type": "string",
+						"defaultValue": "C:\\File_Share\\Source\\SAP-L22"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline5')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Check_For_ACK_File",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Get_Current_TimeStamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Get_Last_Processed_TimeStamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(variables('Ack_FIles_Check'), 'ACK_FIle'))",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Get_ACK_File_Name",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "DS_FileShare",
+											"type": "DatasetReference",
+											"parameters": {
+												"Path": {
+													"value": "@pipeline().parameters.File_Path",
+													"type": "Expression"
+												},
+												"FromDateTime": {
+													"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+													"type": "Expression"
+												},
+												"ToDateTime": {
+													"value": "@variables('V_CurrentDateTime')",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"childItems"
+										]
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get_ACK_File_Name",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@and(startswith(activity('Get_ACK_File_Name').output.childItems, 'SAP_L22_ZPInfo_'), endswith(activity('Get_ACK_File_Name').output.childItems, '.ack'))",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Set Variable1",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "Ack_FIles_Check",
+													"value": "activity('Get_ACK_File_Name').output.childItems"
+												}
+											}
+										]
+									}
+								}
+							],
+							"timeout": "00.00:01:00"
+						}
+					},
+					{
+						"name": "IfCondition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Check_For_ACK_File",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@activity('Get_ACK_File_Name').output.Exists",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "No_ACK_File",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Get_Current_TimeStamp",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Get_Last_Processed_TimeStamp",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LastRunTime-10 LastModifiedDateTime from LastRunTimeStmp WHERE SourceName = 'SAP-L22' "
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Get_Source_File_Names",
+						"description": "",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Check_For_ACK_File",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "@pipeline().parameters.File_Path",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Iterate_For_Each_FIle",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get_Source_File_Names",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get_Source_File_Names').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Check_For_File_Names",
+									"type": "IfCondition",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@or(\nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_', substring(item().name, sub(length(item().name), 18), 10), '.csv.zip')), \nequals(\nitem().name, \nconcat('SAP_L22_ZPInfo_meldekz_', substring(item().name, sub(length(item().name), 18), 10), '.csv.zip'))\n)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Copy1",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "FileSystemSource",
+														"recursive": true
+													},
+													"sink": {
+														"type": "DelimitedTextSink",
+														"storeSettings": {
+															"type": "AzureDataLakeStoreWriteSettings"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextWriteSettings",
+															"quoteAllText": true,
+															"fileExtension": ".txt"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_FileShare_FileName",
+														"type": "DatasetReference",
+														"parameters": {
+															"FilePath": {
+																"value": "@pipeline().parameters.File_Path",
+																"type": "Expression"
+															},
+															"FromDateTime": {
+																"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+																"type": "Expression"
+															},
+															"ToDateTime": {
+																"value": "@variables('V_CurrentDateTime')",
+																"type": "Expression"
+															},
+															"FileNames": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_FileName",
+														"type": "DatasetReference",
+														"parameters": {
+															"FilePath": {
+																"value": "@concat('Daimler/SAP/SAP-L22/', replace(substring(item().name, sub(length(item().name), 18), 10), '-', '/'),'/')",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Store_Current_TimeStamp",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "Iterate_For_Each_FIle",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[UPDATELASTRUNTIME]",
+							"storedProcedureParameters": {
+								"LastRunTime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"SourceName": {
+									"value": {
+										"value": "SAP-L22",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"File_Path": {
+						"type": "string",
+						"defaultValue": "Source/SAP-L22"
+					}
+				},
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					},
+					"Ack_FIles_Check": {
+						"type": "String",
+						"defaultValue": "ACK_FIle"
+					}
+				},
+				"folder": {
+					"name": "SAP-L22"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline6')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetMetadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "Source\\SAP-L22",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@adddays(utcnow(), -10)",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@utcnow()",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "All_Files",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "GetMetadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ALL_FIles_Names",
+							"value": {
+								"value": "@activity('GetMetadata1').output.childItems",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "All_Files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@and(and(startswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, 'SAP_L22_ZPInfo_'), \nendswith(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name, '.ack') ), \nequals(length(variables('ALL_FIles_Names')[int(variables('Inc_Value'))].name), 29))",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "File_Names",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "First_FIle_Name",
+										"value": {
+											"value": "@variables('All_Files_Names')[int(variables('Inc_Value'))].name",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Inc_Counter",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Check_Inc_Value",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "Item_Count",
+										"value": {
+											"value": "@string(add(int(variables('Inc_Value')), 1))",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Check_Inc_Value",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "File_Names",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(int(variables('Item_Count')), length(variables('ALL_FIles_Names')))",
+											"type": "Expression"
+										},
+										"ifFalseActivities": [
+											{
+												"name": "Counter",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "Inc_Value",
+													"value": {
+														"value": "@variables('Item_Count')",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"ifTrueActivities": [
+											{
+												"name": "Inc_Value_Set_0",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "Inc_Value",
+													"value": {
+														"value": "0",
+														"type": "Expression"
+													}
+												}
+											},
+											{
+												"name": "Item_Count_Set_0",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "Item_Count",
+													"value": {
+														"value": "0",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								}
+							],
+							"timeout": "0.00:01:00"
+						}
+					}
+				],
+				"variables": {
+					"ALL_FIles_Names": {
+						"type": "Array"
+					},
+					"First_FIle_Name": {
+						"type": "String"
+					},
+					"Inc_Value": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"Item_Count": {
+						"type": "String",
+						"defaultValue": "0"
+					},
+					"File_Len": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline8')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FS_emp_train",
+								"type": "DatasetReference",
+								"parameters": {
+									"File_Path": {
+										"value": "Example",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Filter1",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@endswith(item().name, '.csv')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Filter1').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy Data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "FileServerReadSettings",
+												"recursive": true
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureDataLakeStoreSink"
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_File_Share_File_Name",
+											"type": "DatasetReference",
+											"parameters": {
+												"File_Name": {
+													"value": "@item().name",
+													"type": "Expression"
+												},
+												"File_Path": {
+													"value": "Example",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_ADLS",
+											"type": "DatasetReference",
+											"parameters": {
+												"FilePath": {
+													"value": "@concat('Example/', replace(pipeline().parameters.ACK_DATE, '-', '/'))",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"parameters": {
+					"ACK_DATE": {
+						"type": "string"
+					},
+					" ACK_Date_Part": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"V_Test_Dte": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQLTOADLS')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Load_Multiple_Tables_To_ADLS",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2019-05-29T08:56:00.000Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								9
+							],
+							"weekDays": [
+								"Monday",
+								"Tuesday",
+								"Wednesday",
+								"Thursday",
+								"Friday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger_Based_BLOB_FILE_CREATE')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Trigger Test TBD",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"Source_Container": "[parameters('trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Source_Container')]",
+							"Target_Container": "[parameters('trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_Target_Container')]",
+							"File": "[parameters('trigger_Based_BLOB_FILE_CREATE_properties_Trigger Test TBD_parameters_File')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/t7dwsource/blobs/",
+					"scope": "[parameters('trigger_Based_BLOB_FILE_CREATE_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetCurrentDateTime",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "EachFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[SAP_Update_LZ_RunTime]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastProcessedDateTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LZRunTime-6 LastModifiedDateTime from SAP_LZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "GetSAPFiles",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "GetLastProcessedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "EachFiles",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetSAPFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetSAPFiles').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "ExecuteSAP_FS_LZ_PL2",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "SAP_FS_LZ_PL2",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"FILENAME": {
+												"value": "@item().name",
+												"type": "Expression"
+											},
+											"FromDateTime": {
+												"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+												"type": "Expression"
+											},
+											"ToDateTime": {
+												"value": "@variables('V_CurrentDateTime')",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SAP_FS_LZ_PL2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_FS_LZ_PL_FINAL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetCurrentDateTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "V_CurrentDateTime",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SetCurrentDateTime",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "EachFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[SAP_Update_LZ_RunTime]",
+							"storedProcedureParameters": {
+								"LastModifiedtime": {
+									"value": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "GetLastProcessedDateTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LZRunTime-21 LastModifiedDateTime from SAP_LZ_Runtime"
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "GetSAPFiles",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "GetLastProcessedDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "GetCurrentDateTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "SAP",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('V_CurrentDateTime')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "EachFiles",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetSAPFiles",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetSAPFiles').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "ExecutePipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "SAP_FS_LZ_PL_FINAL2",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"TRANS_NO": {
+												"value": "@split(item().name, '_')[1] ",
+												"type": "Expression"
+											},
+											"FromDateTime": {
+												"value": "@activity('GetLastProcessedDateTime').output.firstRow.LastModifiedDateTime",
+												"type": "Expression"
+											},
+											"ToDateTime": {
+												"value": "@variables('V_CurrentDateTime')",
+												"type": "Expression"
+											},
+											"PLANT_NO": {
+												"value": "@split(item().name, '_')[3]",
+												"type": "Expression"
+											},
+											"FileName": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"variables": {
+					"V_CurrentDateTime": {
+						"type": "String"
+					},
+					"V_PlantNo": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SAP_FS_LZ_PL_FINAL2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SAP_L22_Final_1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetMetadata1",
+						"type": "GetMetadata",
+						"dependsOn": [
+							{
+								"activity": "Get_Current_TimeStamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Get_Last_Processed_TimeStamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FileShare",
+								"type": "DatasetReference",
+								"parameters": {
+									"Path": {
+										"value": "@pipeline().parameters.File_Path",
+										"type": "Expression"
+									},
+									"FromDateTime": {
+										"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+										"type": "Expression"
+									},
+									"ToDateTime": {
+										"value": "@variables('Get_Current_TimeStamp')",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Get_Current_TimeStamp",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "Get_Current_TimeStamp",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Get_Last_Processed_TimeStamp",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select LastRunTime LastModifiedDateTime from LastRunTimeStmp WHERE SourceName = 'SAP-L22' "
+							},
+							"dataset": {
+								"referenceName": "DS_SQL_DXC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Filter1",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "GetMetadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetMetadata1').output.childitems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@and(and(startswith(item().name, 'SAP_L22_ZPInfo_'), endswith(item().name, '.ack')), equals(length(item().name), 29))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Filter1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "SAP_L22_Final_2",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "SAP_L22_Final_2",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"From_Date": {
+												"value": "@activity('Get_Last_Processed_TimeStamp').output.firstRow.LastModifiedDateTime",
+												"type": "Expression"
+											},
+											"To_Date": {
+												"value": "@variables('Get_Current_TimeStamp')",
+												"type": "Expression"
+											},
+											"ACK_File_Date": {
+												"value": "@substring(item().name, sub(length(item().name), 14), 10)",
+												"type": "Expression"
+											},
+											"FIle_Path": {
+												"value": "@pipeline().parameters.File_Path",
+												"type": "Expression"
+											},
+											"ACK_File_Name": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(length(activity('Filter1').output.value), 0)",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "NO_ACK_FILES",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "SqlServerStoredProcedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "ForEach1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[UPDATELASTRUNTIME]",
+							"storedProcedureParameters": {
+								"LastRunTime": {
+									"value": {
+										"value": "@variables('Get_Current_TimeStamp')",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"SourceName": {
+									"value": {
+										"value": "SAP-L22",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_ASQL_DXC",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"parameters": {
+					"File_Path": {
+						"type": "string",
+						"defaultValue": "Source\\SAP-L22"
+					}
+				},
+				"variables": {
+					"Get_Current_TimeStamp": {
+						"type": "String"
+					},
+					"ACK_FILES_COUNT": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "SAP-L22"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SAP_L22_Final_2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline7')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_FS_emp_train",
+								"type": "DatasetReference",
+								"parameters": {
+									"File_Path": {
+										"value": "Example",
+										"type": "Expression"
+									}
+								}
+							},
+							"fieldList": [
+								"childItems"
+							]
+						}
+					},
+					{
+						"name": "Filter1",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@endswith(item().name, '.ack')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(length(activity('Filter1').output.value), 0)",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Send_No_ACK_Email",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Filter1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pipeline8",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"ACK_DATE": {
+												"value": "@item().name",
+												"type": "Expression"
+											},
+											"ACK_Date_Part": {
+												"value": "@substring(item().name, 4,10)",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pipeline8')]"
+			]
+		}
+	]
+}
