@@ -1,0 +1,12 @@
+{
+	"name": "FileShareSharedIR",
+	"properties": {
+		"type": "SelfHosted",
+		"typeProperties": {
+			"linkedInfo": {
+				"resourceId": "/subscriptions/aa9d0e6b-d25e-4e3b-94b3-3c71c403c9e7/resourcegroups/RGDXC1134/providers/Microsoft.DataFactory/factories/TB7ADF/integrationruntimes/SelfHostedIR",
+				"authorizationType": "Rbac"
+			}
+		}
+	}
+}
