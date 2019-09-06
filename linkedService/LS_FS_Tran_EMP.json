@@ -7,10 +7,10 @@
 		"typeProperties": {
 			"host": "C:\\File_Share",
 			"userId": "sjaladi3@dxc.com",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIyYjE3NjE0Mi04NWQ3LTRlNzMtYTU4Yy04Y2QzZjM5ZWYzZDUiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJlY2QyNWZkZi1iMTA3LTRhODgtOWM5OS1iZDZmOTk3ODEzN2EiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
-			"referenceName": "FileShare",
+			"referenceName": "FileShareSharedIR",
 			"type": "IntegrationRuntimeReference"
 		}
 	}
