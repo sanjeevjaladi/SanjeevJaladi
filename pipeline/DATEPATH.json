@@ -1,0 +1,26 @@
+{
+	"name": "DATEPATH",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Sanjeev Jaladi",
+					"value": {
+						"value": "@concat(addhours(utcnow(), 0, 'yyyy'),'/',addhours(utcnow(), 0, 'MM'),'/',addhours(utcnow(), 0, 'dd'))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"Sanjeev Jaladi": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
