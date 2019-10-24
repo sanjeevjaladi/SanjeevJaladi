@@ -1,0 +1,16 @@
+{
+	"name": "On_Prime_Sql_Server",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "OnPrime_SQL_DB_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "EMP_1"
+		}
+	}
+}
